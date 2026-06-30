@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 848409ee8ba454f42a5ddff137688a27, type: 3}
+  m_Name: ReferenceImageLibrary
+  m_EditorClassIdentifier: Unity.XR.ARSubsystems::UnityEngine.XR.ARSubsystems.XRReferenceImageLibrary
+  m_GuidLow: 4809222235267645245
+  m_GuidHigh: 11507649978074641322
+  m_DataStore:
+    m_Storage: []
+  m_Images:
+  - m_SerializedGuid:
+      m_GuidLow: 5218403641501148188
+      m_GuidHigh: 14661598966030920876
+    m_SerializedTextureGuid:
+      m_GuidLow: 9593904538025890983
+      m_GuidHigh: 4757306037628927881
+    m_Size: {x: 0, y: 0}
+    m_SpecifySize: 0
+    m_Name: DongHo
+    m_Texture: {fileID: 0}
+  - m_SerializedGuid:
+      m_GuidLow: 5049020886465536208
+      m_GuidHigh: 13922481422611178654
+    m_SerializedTextureGuid:
+      m_GuidLow: 11863787417133683967
+      m_GuidHigh: 12757983493681693067
+    m_Size: {x: 0, y: 0}
+    m_SpecifySize: 0
+    m_Name: QuanHo
+    m_Texture: {fileID: 0}
