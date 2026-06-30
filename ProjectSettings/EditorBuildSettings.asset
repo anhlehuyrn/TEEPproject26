@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1045 &1
+EditorBuildSettings:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Scenes:
+  - enabled: 1
+    path: Assets/Scenes/MainPage 30th6.unity
+    guid: 78518796b832b924486c595af2eaf1e8
+  - enabled: 1
+    path: Assets/Scenes/ScanPage.unity
+    guid: 9fc0d4010bbf28b4594072e72b8655ab
+  m_configObjects:
+    UnityEditor.XR.ARCore.ARCoreSettings: {fileID: 11400000, guid: 1218aa419b2a04f40855df4dc23c9e40, type: 2}
+    com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 289c1b55c9541489481df5cc06664110, type: 3}
+    com.unity.xr.arfoundation.simulation_settings: {fileID: 11400000, guid: 9c5921cd7d266ef4c8f043615d6ccc0b, type: 2}
+    com.unity.xr.management.loader_settings: {fileID: 11400000, guid: 9de8cc9be61889a448bf78e77224a596, type: 2}
