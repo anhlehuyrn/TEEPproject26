@@ -55,6 +55,7 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\ARFungusDialogueTrigger.cs" />
     <Compile Include="Assets\Scripts\ARImageScanManager.cs" />
+    <Compile Include="Assets\AIChat\AiNpcQuestionController.cs" />
     <Compile Include="Assets\Scripts\SceneLoader.cs" />
   </ItemGroup>
   <ItemGroup>
