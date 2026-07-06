@@ -2567,7 +2567,7 @@ MonoBehaviour:
   npcName: Dong Ho NPC
   targetName: DongHo
   lessonContext: You are explaining the Dong Ho folk painting to students.
-  sampleRate: 48000
+  sampleRate: 56000
   maxRecordingSeconds: 30
   askButton: {fileID: 2010844430}
   statusText: {fileID: 0}
