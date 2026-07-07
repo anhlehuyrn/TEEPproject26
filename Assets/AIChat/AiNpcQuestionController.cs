@@ -11,10 +11,10 @@ public class AiNpcQuestionController : MonoBehaviour
     [SerializeField] private string serverBaseUrl = "http://127.0.0.1:8787";
 
     [Header("NPC Context")]
-    [SerializeField] private string npcName = "Dong Ho NPC";
-    [SerializeField] private string targetName = "Dong Ho";
+    [SerializeField] private string npcName = "Dragon Boat NPC";
+    [SerializeField] private string targetName = "DragonBoat";
     [TextArea(2, 5)]
-    [SerializeField] private string lessonContext = "You are explaining the Dong Ho painting folk to students.";
+    [SerializeField] private string lessonContext = "You are explaining the Dragon Boat Festival to students.";
 
     [Header("Recording")]
     [SerializeField] private int sampleRate = 16000;
