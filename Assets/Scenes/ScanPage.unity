@@ -656,7 +656,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   trackedImageManager: {fileID: 224561775}
-  targetImageName: DongHo
+  targetImageName: 
   avatarPrefab: {fileID: 1775172789244898354, guid: 341b48c6b3201d641913ecb24ea39261, type: 3}
   avatarLocalOffset: {x: 0.1, y: 0, z: -0.1}
   avatarRotationOffset: {x: -90, y: 0, z: 180}
@@ -680,11 +680,15 @@ MonoBehaviour:
   imageDialogues:
   - imageName: DongHo
     blockName: DongHoIntro
-    playOnlyOnce: 1
+    playOnlyOnce: 0
     hasPlayed: 0
   - imageName: QuanHo
     blockName: QuanHoIntro
-    playOnlyOnce: 1
+    playOnlyOnce: 0
+    hasPlayed: 0
+  - imageName: LonAmDuong
+    blockName: LonAmDuongIntro
+    playOnlyOnce: 0
     hasPlayed: 0
   stopDialogueWhenTrackingLost: 1
   hideSayDialogWhenTrackingLost: 1
@@ -1528,6 +1532,10 @@ GameObject:
   - component: {fileID: 1355906791}
   - component: {fileID: 1355906790}
   - component: {fileID: 1355906792}
+  - component: {fileID: 1355906793}
+  - component: {fileID: 1355906796}
+  - component: {fileID: 1355906795}
+  - component: {fileID: 1355906794}
   m_Layer: 0
   m_Name: Flowchart
   m_TagString: Untagged
@@ -1548,7 +1556,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   version: 1
-  scrollPos: {x: 0, y: 0}
+  scrollPos: {x: -52.308594, y: 117}
   variablesScrollPos: {x: 0, y: 0}
   variablesExpanded: 1
   blockViewHeight: 400
@@ -1560,7 +1568,7 @@ MonoBehaviour:
     width: 1114
     height: 859
   selectedBlocks:
-  - {fileID: 1355906789}
+  - {fileID: 1355906793}
   selectedCommands: []
   variables: []
   description: 
@@ -1839,6 +1847,122 @@ MonoBehaviour:
     stringVal: 
   startIndex: 0
   callMode: 0
+--- !u!114 &1355906793
+MonoBehaviour:
+  m_ObjectHideFlags: 2
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1355906780}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3d3d73aef2cfc4f51abf34ac00241f60, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungus::Fungus.Block
+  nodeRect:
+    serializedVersion: 2
+    x: 256.5
+    y: 204
+    width: 152.54688
+    height: 40
+  tint: {r: 0.257031, g: 0.41913748, b: 0.7169812, a: 1}
+  useCustomTint: 1
+  itemId: 8
+  blockName: LonAmDuongIntro
+  description: 
+  eventHandler: {fileID: 0}
+  commandList:
+  - {fileID: 1355906796}
+  - {fileID: 1355906795}
+  - {fileID: 1355906794}
+  suppressAllAutoSelections: 0
+--- !u!114 &1355906794
+MonoBehaviour:
+  m_ObjectHideFlags: 2
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1355906780}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec422cd568a9c4a31ad7c36d0572b9da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungus::Fungus.Say
+  itemId: 13
+  indentLevel: 0
+  storyText: This artwork beautifully captures the romantic and joyful spirit of
+    spring festivals, where villagers gathered to celebrate community and love through
+    music.
+  description: 
+  character: {fileID: 0}
+  portrait: {fileID: 0}
+  voiceOverClip: {fileID: 0}
+  showAlways: 1
+  showCount: 1
+  extendPrevious: 0
+  fadeWhenDone: 1
+  waitForClick: 1
+  stopVoiceover: 1
+  waitForVO: 0
+  setSayDialog: {fileID: 0}
+--- !u!114 &1355906795
+MonoBehaviour:
+  m_ObjectHideFlags: 2
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1355906780}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec422cd568a9c4a31ad7c36d0572b9da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungus::Fungus.Say
+  itemId: 12
+  indentLevel: 0
+  storyText: "In this painting, notice the elegant male and female singers\u2014known
+    as 'li\u1EC1n anh' and 'li\u1EC1n ch\u1ECB'\u2014wearing traditional costumes
+    and singing gracefully together."
+  description: 
+  character: {fileID: 0}
+  portrait: {fileID: 0}
+  voiceOverClip: {fileID: 8300000, guid: 1264a8f951947e54e97635c7276c6be6, type: 3}
+  showAlways: 1
+  showCount: 1
+  extendPrevious: 0
+  fadeWhenDone: 1
+  waitForClick: 1
+  stopVoiceover: 1
+  waitForVO: 0
+  setSayDialog: {fileID: 0}
+--- !u!114 &1355906796
+MonoBehaviour:
+  m_ObjectHideFlags: 2
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1355906780}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ec422cd568a9c4a31ad7c36d0572b9da, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungus::Fungus.Say
+  itemId: 11
+  indentLevel: 0
+  storyText: Let's move on to the next one. This is Quan Ho. It is a traditional
+    Vietnamese folk song, deeply connected with people's entertainment and social
+    life in the past.
+  description: 
+  character: {fileID: 0}
+  portrait: {fileID: 0}
+  voiceOverClip: {fileID: 8300000, guid: c52cf918cd53e6f4cb85ece0081e1557, type: 3}
+  showAlways: 1
+  showCount: 1
+  extendPrevious: 0
+  fadeWhenDone: 1
+  waitForClick: 1
+  stopVoiceover: 1
+  waitForVO: 0
+  setSayDialog: {fileID: 0}
 --- !u!1 &1376973169
 GameObject:
   m_ObjectHideFlags: 0
