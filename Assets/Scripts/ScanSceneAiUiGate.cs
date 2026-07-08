@@ -27,6 +27,7 @@ public class ScanSceneAiUiGate : MonoBehaviour
 
     private Coroutine revealUiCoroutine;
     private bool hasShownUi;
+    private readonly HashSet<TrackableId> trackingTargetImages = new HashSet<TrackableId>();
 
     private void Awake()
     {
@@ -56,6 +57,7 @@ public class ScanSceneAiUiGate : MonoBehaviour
         }
 
         StopRevealCoroutine();
+        trackingTargetImages.Clear();
     }
 
     private void OnTrackedImagesChanged(ARTrackablesChangedEventArgs<ARTrackedImage> eventArgs)
@@ -72,7 +74,7 @@ public class ScanSceneAiUiGate : MonoBehaviour
 
         foreach (KeyValuePair<TrackableId, ARTrackedImage> removedImage in eventArgs.removed)
         {
-            if (hideUiWhenTrackingLost)
+            if (trackingTargetImages.Remove(removedImage.Key) && hideUiWhenTrackingLost && trackingTargetImages.Count == 0)
             {
                 StopRevealCoroutine();
                 ResetAiUiAndQuestionSession();
@@ -89,7 +91,9 @@ public class ScanSceneAiUiGate : MonoBehaviour
 
         if (image.trackingState != TrackingState.Tracking)
         {
-            if (hideUiWhenTrackingLost)
+            trackingTargetImages.Remove(image.trackableId);
+
+            if (hideUiWhenTrackingLost && trackingTargetImages.Count == 0)
             {
                 StopRevealCoroutine();
                 ResetAiUiAndQuestionSession();
@@ -97,6 +101,8 @@ public class ScanSceneAiUiGate : MonoBehaviour
 
             return;
         }
+
+        trackingTargetImages.Add(image.trackableId);
 
         if (showOnlyOncePerScene && hasShownUi)
         {
