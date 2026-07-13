@@ -33,7 +33,7 @@ public class ScanSceneAiUiGate : MonoBehaviour
     {
         if (trackedImageManager == null)
         {
-            trackedImageManager = FindObjectOfType<ARTrackedImageManager>();
+            trackedImageManager = FindAnyObjectByType<ARTrackedImageManager>();
         }
 
         CacheAiQuestionControllersIfNeeded();
@@ -225,7 +225,7 @@ public class ScanSceneAiUiGate : MonoBehaviour
             return;
         }
 
-        aiQuestionControllers = FindObjectsOfType<AiNpcQuestionController>(true);
+        aiQuestionControllers = FindObjectsByType<AiNpcQuestionController>(FindObjectsSortMode.None);
     }
 
     private void ResetAiQuestionControllers()
