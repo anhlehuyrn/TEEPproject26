@@ -1867,7 +1867,7 @@ MonoBehaviour:
     height: 40
   tint: {r: 0.257031, g: 0.41913748, b: 0.7169812, a: 1}
   useCustomTint: 1
-  itemId: 8
+  itemId: 14
   blockName: LonAmDuongIntro
   description: 
   eventHandler: {fileID: 0}
@@ -2692,7 +2692,9 @@ MonoBehaviour:
   askButton: {fileID: 2010844430}
   statusText: {fileID: 0}
   answerText: {fileID: 986151412}
+  loadingUiPanel: {fileID: 0}
   answerAudioSource: {fileID: 1993532142}
+  npcAnimator: {fileID: 5866666021909216657, guid: e1f2223e5596f8340b968b6a68ed8171, type: 3}
 --- !u!1 &2010844428
 GameObject:
   m_ObjectHideFlags: 0

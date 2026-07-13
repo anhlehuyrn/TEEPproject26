@@ -11,10 +11,10 @@ public class AiNpcQuestionController : MonoBehaviour
     [SerializeField] private string serverBaseUrl = "http://127.0.0.1:8787";
 
     [Header("NPC Context")]
-    [SerializeField] private string npcName = "Dragon Boat NPC";
-    [SerializeField] private string targetName = "DragonBoat";
+    [SerializeField] private string npcName = "HA NPC";
+    [SerializeField] private string targetName = "DongHo";
     [TextArea(2, 5)]
-    [SerializeField] private string lessonContext = "You are explaining the Dragon Boat Festival to students.";
+    [SerializeField] private string lessonContext = "You are explaining the Dong Ho folk painting to students.";
 
     [Header("Recording")]
     [SerializeField] private int sampleRate = 16000;
@@ -24,9 +24,13 @@ public class AiNpcQuestionController : MonoBehaviour
     [SerializeField] private Button askButton;
     [SerializeField] private Text statusText;
     [SerializeField] private Text answerText;
+    [SerializeField] private GameObject loadingUiPanel; // THÊM DÒNG NÀY: Dành cho vòng xoay Loading UI (nếu có)
 
     [Header("Audio")]
     [SerializeField] private AudioSource answerAudioSource;
+
+    [Header("Animation")]
+    [SerializeField] private Animator npcAnimator; // THÊM DÒNG NÀY: Gắn mô hình 3D của bạn vào đây
 
     private AudioClip recordingClip;
     private bool isRecording;
@@ -141,6 +145,17 @@ public class AiNpcQuestionController : MonoBehaviour
         SetButtonEnabled(false);
         SetStatus("Sending question...");
 
+        // === BẮT ĐẦU TRẠNG THÁI SUY NGHĨ ===
+        if (npcAnimator != null)
+        {
+            npcAnimator.SetBool("isThinking", true);
+        }
+        if (loadingUiPanel != null)
+        {
+            loadingUiPanel.SetActive(true); // Hiện vòng xoay Loading
+        }
+        // ===================================
+
         AskRequest request = new AskRequest
         {
             audioBase64 = Convert.ToBase64String(wavBytes),
@@ -161,6 +176,17 @@ public class AiNpcQuestionController : MonoBehaviour
             webRequest.SetRequestHeader("Content-Type", "application/json");
 
             yield return webRequest.SendWebRequest();
+
+            // === KẾT THÚC TRẠNG THÁI SUY NGHĨ ===
+            if (npcAnimator != null)
+            {
+                npcAnimator.SetBool("isThinking", false);
+            }
+            if (loadingUiPanel != null)
+            {
+                loadingUiPanel.SetActive(false); // Ẩn vòng xoay Loading
+            }
+            // ====================================
 
             if (webRequest.result != UnityWebRequest.Result.Success)
             {
