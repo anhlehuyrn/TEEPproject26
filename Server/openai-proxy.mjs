@@ -6,13 +6,20 @@ import crypto from "node:crypto";
 
 const PORT = Number(process.env.PORT || 8787);
 const API_KEY = process.env.OPENAI_API_KEY;
+<<<<<<< HEAD
 const CHAT_MODEL = process.env.OPENAI_CHAT_MODEL || "gpt-4.1-mini";
 const TRANSCRIBE_MODEL = process.env.OPENAI_TRANSCRIBE_MODEL || "gpt-4o-mini-transcribe";
 const TTS_MODEL = process.env.OPENAI_TTS_MODEL || "gpt-4o-mini-tts";
+=======
+const CHAT_MODEL = process.env.OPENAI_CHAT_MODEL || "gpt-4o-mini"; 
+const TRANSCRIBE_MODEL = process.env.OPENAI_TRANSCRIBE_MODEL || "whisper-1"; 
+const TTS_MODEL = process.env.OPENAI_TTS_MODEL || "tts-1"; 
+>>>>>>> restore-dialog
 const TTS_VOICE = process.env.OPENAI_TTS_VOICE || "alloy";
 const AUDIO_DIR = path.resolve(".audio");
 const MAX_BODY_BYTES = 24 * 1024 * 1024;
 
+<<<<<<< HEAD
 const systemPrompt = [
   "You are a friendly AR museum NPC avatar.",
   "Answer student questions clearly and briefly.",
@@ -20,6 +27,27 @@ const systemPrompt = [
   "If the student asks in Chinese, answer in Traditional Chinese.",
   "If the student asks in English, answer in English.",
   "Keep answers suitable for a classroom AR learning activity."
+=======
+// 1. KHO TRI THỨC VĂN HÓA (Semantic Cultural Knowledge Base)
+const culturalKnowledgeBase = {
+  "DongHo": `Artwork: Dong Ho Folk Painting - The Mice's Wedding (Tranh Đông Hồ - Đám cưới chuột). 
+Semantic Interpretation: The artwork explores the complex social dynamics of ancient Vietnamese feudal society. Do not just describe the animals; it is a sharp political satire. 
+- The Cat represents the greedy, corrupt, and oppressive feudal ruling class.
+- The Bribe (bird and fish) is a metaphor for the bribery required for the poor to live in peace, critiquing corruption in old times.
+- The Groom and The Bride represent the ordinary, powerless peasants and their resilience, optimism, and flexibility. The wedding symbolizes the continuation of life, love, and the ultimate hope for a peaceful and prosperous future for the community.`,
+  "QuanHo": "Artwork: Quan Ho Folk Songs. Semantic Interpretation: Represents the refined, elegant cultural etiquette of Vietnamese people. Focus on the profound community bonding, respect, and emotional depth in their traditional singing.",
+  "LonAmDuong": "Artwork: Yin-Yang Pig. Semantic Interpretation: The Yin-Yang swirl on the pig's body symbolizes the cycle of the universe, fertility, and the peasant's deep desire for a prosperous, harmonious life."
+};
+
+// 2. PROMPT HỆ THỐNG CƠ BẢN (Cultural Mediator Persona)
+const BASE_SYSTEM_PROMPT = [
+  "You are an expert 'Cultural Guardian' AR museum avatar.",
+  "Your role is cultural mediation. Always focus on explaining the metaphorical and satirical meanings (e.g., Cat = corrupt rulers, Mice = clever peasants), not just describing what is visible.",
+  "Use a warm, engaging, and culturally deep tone.",
+  "Auto-detect the user's language (English, Vietnamese, or Chinese) and reply naturally in that exact same language.",
+  "Keep your answers concise and strictly under 80 words to suit an AR environment.",
+  "If the user asks off-topic questions (e.g., math, coding, politics), gently guide them back to exploring the cultural secrets of the painting."
+>>>>>>> restore-dialog
 ].join(" ");
 
 await mkdir(AUDIO_DIR, { recursive: true });
@@ -116,6 +144,14 @@ async function createNpcReply(transcript, body) {
   const npcName = body.npcName || "NPC Avatar";
   const targetName = body.targetName || "the scanned image";
   const context = body.context || "";
+<<<<<<< HEAD
+=======
+  
+  // 3. TIÊM NGỮ NGHĨA VĂN HÓA VÀO PROMPT
+  const deepCulturalContext = culturalKnowledgeBase[targetName] || "Focus on traditional cultural values.";
+  const dynamicSystemPrompt = `${BASE_SYSTEM_PROMPT}\n\nCurrent Artwork Context: ${deepCulturalContext}`;
+
+>>>>>>> restore-dialog
   const userPrompt = [
     `NPC name: ${npcName}`,
     `Current AR target image: ${targetName}`,
@@ -123,7 +159,11 @@ async function createNpcReply(transcript, body) {
     `Student question: ${transcript}`
   ].filter(Boolean).join("\n");
 
+<<<<<<< HEAD
   const response = await fetch("https://api.openai.com/v1/responses", {
+=======
+  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+>>>>>>> restore-dialog
     method: "POST",
     headers: {
       Authorization: `Bearer ${API_KEY}`,
@@ -131,8 +171,14 @@ async function createNpcReply(transcript, body) {
     },
     body: JSON.stringify({
       model: CHAT_MODEL,
+<<<<<<< HEAD
       input: [
         { role: "system", content: systemPrompt },
+=======
+      temperature: 0.2, // Giữ nguyên mức 0.2 để giảm hallucination
+      messages: [
+        { role: "system", content: dynamicSystemPrompt },
+>>>>>>> restore-dialog
         { role: "user", content: userPrompt }
       ]
     })
@@ -171,6 +217,7 @@ async function synthesizeSpeech(text) {
 }
 
 function extractResponseText(data) {
+<<<<<<< HEAD
   if (typeof data.output_text === "string") {
     return data.output_text;
   }
@@ -185,6 +232,12 @@ function extractResponseText(data) {
   }
 
   return chunks.join("\n");
+=======
+  if (data.choices && data.choices.length > 0 && data.choices[0].message) {
+    return data.choices[0].message.content;
+  }
+  return "Error: Could not parse AI response.";
+>>>>>>> restore-dialog
 }
 
 async function serveAudio(pathname, res) {
@@ -257,4 +310,8 @@ function requireApiKey() {
   if (!API_KEY) {
     throw new Error("OPENAI_API_KEY is not set on the server.");
   }
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> restore-dialog

@@ -17,7 +17,12 @@ public class ARImageScanManager : MonoBehaviour
     [SerializeField] private Vector3 avatarScale = Vector3.one;
     [SerializeField] private bool hideWhenTrackingLost = true;
 
+    private const float BaseCameraDistanceMeters = 0.4f;
+    private const float MinAutoScaleMultiplier = 0.5f;
+    private const float MaxAutoScaleMultiplier = 8f;
+
     private readonly Dictionary<TrackableId, GameObject> spawnedAvatars = new Dictionary<TrackableId, GameObject>();
+    private Camera arCamera;
 
     private void Awake()
     {
@@ -25,6 +30,8 @@ public class ARImageScanManager : MonoBehaviour
         {
             trackedImageManager = GetComponent<ARTrackedImageManager>();
         }
+
+        arCamera = Camera.main;
     }
 
     private void OnEnable()
@@ -82,11 +89,34 @@ public class ARImageScanManager : MonoBehaviour
         }
 
         Transform imageTransform = trackedImage.transform;
-        avatar.transform.position = imageTransform.TransformPoint(avatarLocalOffset);
+        float scaleMultiplier = GetTrackedImageScaleMultiplier(trackedImage);
+        avatar.transform.position = imageTransform.TransformPoint(avatarLocalOffset * scaleMultiplier);
         avatar.transform.rotation = Quaternion.AngleAxis(avatarWorldYawOffset, Vector3.up)
             * imageTransform.rotation
             * Quaternion.Euler(avatarRotationOffset);
-        avatar.transform.localScale = avatarScale;
+        avatar.transform.localScale = avatarScale * scaleMultiplier;
+    }
+
+    private float GetTrackedImageScaleMultiplier(ARTrackedImage trackedImage)
+    {
+        if (trackedImage == null)
+        {
+            return 1f;
+        }
+
+        if (arCamera == null)
+        {
+            arCamera = Camera.main;
+        }
+
+        if (arCamera == null)
+        {
+            return 1f;
+        }
+
+        float cameraDistance = Vector3.Distance(arCamera.transform.position, trackedImage.transform.position);
+        float scaleMultiplier = cameraDistance / BaseCameraDistanceMeters;
+        return Mathf.Clamp(scaleMultiplier, MinAutoScaleMultiplier, MaxAutoScaleMultiplier);
     }
 
     private bool IsTargetImage(ARTrackedImage trackedImage)

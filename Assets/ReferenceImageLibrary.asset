@@ -37,3 +37,13 @@ MonoBehaviour:
     m_SpecifySize: 0
     m_Name: QuanHo
     m_Texture: {fileID: 0}
+  - m_SerializedGuid:
+      m_GuidLow: 4838816653930406891
+      m_GuidHigh: 17845210537930671775
+    m_SerializedTextureGuid:
+      m_GuidLow: 9445279845249514894
+      m_GuidHigh: 15105212271518271514
+    m_Size: {x: 0, y: 0}
+    m_SpecifySize: 0
+    m_Name: LonAmDuong
+    m_Texture: {fileID: 0}
