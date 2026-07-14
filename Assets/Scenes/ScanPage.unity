@@ -2660,7 +2660,7 @@ MonoBehaviour:
       imageLocalPositionMeters: {x: 0, y: 0}
       imageSurfaceOffsetMeters: 0.005
       floatForwardMeters: 0.1
-      widthMeters: 0.12
+      widthMeters: 0.06
       sortingOrder: 10
       minScaleMultiplier: 0.1
       maxScaleMultiplier: 2
@@ -2668,9 +2668,9 @@ MonoBehaviour:
       textBoxWidthMeters: 0.25
       textBoxHeightMeters: 0
       textLineSpacing: 0
-      textLocalOffsetMeters: {x: 0, y: 0, z: 0}
+      textLocalOffsetMeters: {x: 0, y: -0.08, z: 0}
       audioClip: {fileID: 8300000, guid: 0508d8aa4b8cbef4a9498944e2b4afe1, type: 3}
-      audioVolume: 0
+      audioVolume: 1
   floatInSeconds: 5
   resetWhenTrackingFoundAgain: 1
 --- !u!1 &1623045737
@@ -2986,7 +2986,7 @@ MonoBehaviour:
   askButton: {fileID: 2010844430}
   askButtonText: {fileID: 0}
   askButtonTmpText: {fileID: 0}
-  exploreArtworkButton: {fileID: 0}
+  exploreArtworkButton: {fileID: 1425813301}
   exploreArtworkButtonText: {fileID: 0}
   exploreArtworkButtonTmpText: {fileID: 0}
   answerPanelObjects:
@@ -2999,7 +2999,7 @@ MonoBehaviour:
   makeAnswerTextScrollable: 1
   answerScrollPadding: 30
   answerScrollSensitivity: 24
-  floatingItemSpawner: {fileID: 0}
+  floatingItemSpawner: {fileID: 1526063655}
   answerAudioSource: {fileID: 1993532142}
 --- !u!1 &2010844428
 GameObject:
