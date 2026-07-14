@@ -21,6 +21,8 @@ public class ScanSceneAiUiGate : MonoBehaviour
     [SerializeField, Min(0f)] private float delayAfterDialogueEnds = 0.5f;
 
     [Header("AI UI")]
+    [SerializeField] private GameObject[] readyUiObjects;
+    [SerializeField] private GameObject[] answerUiObjects;
     [SerializeField] private GameObject[] aiUiObjects;
     [SerializeField] private Text[] textsToClearWhenHidden;
     [SerializeField] private AiNpcQuestionController[] aiQuestionControllers;
@@ -33,7 +35,7 @@ public class ScanSceneAiUiGate : MonoBehaviour
     {
         if (trackedImageManager == null)
         {
-            trackedImageManager = FindAnyObjectByType<ARTrackedImageManager>();
+            trackedImageManager = FindObjectOfType<ARTrackedImageManager>();
         }
 
         CacheAiQuestionControllersIfNeeded();
@@ -103,6 +105,7 @@ public class ScanSceneAiUiGate : MonoBehaviour
         }
 
         trackingTargetImages.Add(image.trackableId);
+        SetCurrentScannedTargetName(image.referenceImage.name);
 
         if (showOnlyOncePerScene && hasShownUi)
         {
@@ -173,14 +176,20 @@ public class ScanSceneAiUiGate : MonoBehaviour
 
     private void ShowAiUi()
     {
-        SetAiUiVisible(true);
+        SetReadyUiVisible(true);
+
+        if (!HasVisibleAiAnswer())
+        {
+            SetAnswerUiVisible(false);
+        }
     }
 
     private void HideAiUi()
     {
-        SetAiUiVisible(false);
+        SetReadyUiVisible(false);
+        SetAnswerUiVisible(false);
 
-        foreach (Text text in textsToClearWhenHidden)
+        foreach (Text text in textsToClearWhenHidden ?? new Text[0])
         {
             if (text != null)
             {
@@ -196,15 +205,45 @@ public class ScanSceneAiUiGate : MonoBehaviour
         ResetAiQuestionControllers();
     }
 
-    private void SetAiUiVisible(bool visible)
+    private void SetReadyUiVisible(bool visible)
     {
-        foreach (GameObject uiObject in aiUiObjects)
+        GameObject[] objectsToSet = readyUiObjects != null && readyUiObjects.Length > 0
+            ? readyUiObjects
+            : aiUiObjects;
+
+        foreach (GameObject uiObject in objectsToSet ?? new GameObject[0])
         {
             if (uiObject != null)
             {
                 uiObject.SetActive(visible);
             }
         }
+    }
+
+    private void SetAnswerUiVisible(bool visible)
+    {
+        foreach (GameObject uiObject in answerUiObjects ?? new GameObject[0])
+        {
+            if (uiObject != null)
+            {
+                uiObject.SetActive(visible);
+            }
+        }
+    }
+
+    private bool HasVisibleAiAnswer()
+    {
+        CacheAiQuestionControllersIfNeeded();
+
+        foreach (AiNpcQuestionController controller in aiQuestionControllers)
+        {
+            if (controller != null && controller.HasVisibleAnswer)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void StopRevealCoroutine()
@@ -225,7 +264,7 @@ public class ScanSceneAiUiGate : MonoBehaviour
             return;
         }
 
-        aiQuestionControllers = FindObjectsByType<AiNpcQuestionController>(FindObjectsSortMode.None);
+        aiQuestionControllers = FindObjectsOfType<AiNpcQuestionController>(true);
     }
 
     private void ResetAiQuestionControllers()
@@ -237,6 +276,19 @@ public class ScanSceneAiUiGate : MonoBehaviour
             if (controller != null)
             {
                 controller.ResetQuestionSession();
+            }
+        }
+    }
+
+    private void SetCurrentScannedTargetName(string scannedTargetName)
+    {
+        CacheAiQuestionControllersIfNeeded();
+
+        foreach (AiNpcQuestionController controller in aiQuestionControllers)
+        {
+            if (controller != null)
+            {
+                controller.SetCurrentScannedTargetName(scannedTargetName);
             }
         }
     }
