@@ -680,15 +680,7 @@ MonoBehaviour:
   imageDialogues:
   - imageName: DongHo
     blockName: DongHoIntro
-    playOnlyOnce: 0
-    hasPlayed: 0
-  - imageName: QuanHo
-    blockName: QuanHoIntro
-    playOnlyOnce: 0
-    hasPlayed: 0
-  - imageName: LonAmDuong
-    blockName: LonAmDuongIntro
-    playOnlyOnce: 0
+    playOnlyOnce: 1
     hasPlayed: 0
   stopDialogueWhenTrackingLost: 1
   hideSayDialogWhenTrackingLost: 1
@@ -1409,7 +1401,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 1
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Character Name
+  m_Text: HA
 --- !u!222 &1282755270
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -2122,14 +2114,14 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 1, g: 1, b: 1, a: 0.39215687}
   m_RaycastTarget: 1
   m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
   m_Maskable: 1
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: e8ab00ef0d9684dcb9deb52811d91218, type: 3}
+  m_Sprite: {fileID: 10907, guid: 0000000000000000f000000000000000, type: 0}
   m_Type: 1
   m_PreserveAspect: 1
   m_FillCenter: 1
@@ -2166,8 +2158,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: -750.0001, y: 0}
-  m_SizeDelta: {x: 1500, y: 335}
+  m_AnchoredPosition: {x: -750.0001, y: 150}
+  m_SizeDelta: {x: 1000, y: 200}
   m_Pivot: {x: 0, y: 0}
 --- !u!1 &1397596935
 GameObject:
@@ -2668,7 +2660,7 @@ MonoBehaviour:
       textBoxWidthMeters: 0.25
       textBoxHeightMeters: 0
       textLineSpacing: 0
-      textLocalOffsetMeters: {x: 0, y: -0.08, z: 0}
+      textLocalOffsetMeters: {x: 0, y: -0.1, z: 0}
       audioClip: {fileID: 8300000, guid: 0508d8aa4b8cbef4a9498944e2b4afe1, type: 3}
       audioVolume: 1
   floatInSeconds: 5
