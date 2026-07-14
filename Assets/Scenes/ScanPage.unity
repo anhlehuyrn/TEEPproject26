@@ -2610,8 +2610,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1526063654}
-  - component: {fileID: 1526063653}
-  - component: {fileID: 1526063652}
+  - component: {fileID: 1526063655}
   m_Layer: 0
   m_Name: FloatingItemInteractable
   m_TagString: Untagged
@@ -2619,39 +2618,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1526063652
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1526063651}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 656acb5b20db45e4492ed56e516ded16, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::ARFloatingItemSpawner
-  trackedImageManager: {fileID: 0}
-  hideWhenTrackingLost: 1
-  showWhenTrackingFound: 0
-  targetImageSets: []
-  floatInSeconds: 0.7
-  resetWhenTrackingFoundAgain: 1
---- !u!114 &1526063653
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1526063651}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4f87f3a2d8188b4a84425b4b2caceca, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FloatingItemInteractable
-  idleBobMeters: 0.01
-  idleBobSpeed: 1.8
-  faceCamera: 1
 --- !u!4 &1526063654
 Transform:
   m_ObjectHideFlags: 0
@@ -2667,6 +2633,46 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1526063655
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1526063651}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 656acb5b20db45e4492ed56e516ded16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ARFloatingItemSpawner
+  trackedImageManager: {fileID: 224561775}
+  hideWhenTrackingLost: 1
+  showWhenTrackingFound: 0
+  targetImageSets:
+  - targetImageName: DongHo
+    floatingItems:
+    - itemName: meo
+      description: "The cat in the folk painting \u201CThe Mouse Wedding\u201D symbolizes
+        power and greed."
+      transparentPngSprite: {fileID: 2067443639, guid: a2b976b72a1e4d44ca4a5fecc951a189, type: 3}
+      animatedSprites: []
+      animationFps: 1
+      imageLocalPositionMeters: {x: 0, y: 0}
+      imageSurfaceOffsetMeters: 0.005
+      floatForwardMeters: 0.1
+      widthMeters: 0.12
+      sortingOrder: 10
+      minScaleMultiplier: 0.1
+      maxScaleMultiplier: 2
+      textFontSize: 10
+      textBoxWidthMeters: 0.25
+      textBoxHeightMeters: 0
+      textLineSpacing: 0
+      textLocalOffsetMeters: {x: 0, y: 0, z: 0}
+      audioClip: {fileID: 8300000, guid: 0508d8aa4b8cbef4a9498944e2b4afe1, type: 3}
+      audioVolume: 0
+  floatInSeconds: 5
+  resetWhenTrackingFoundAgain: 1
 --- !u!1 &1623045737
 GameObject:
   m_ObjectHideFlags: 0
@@ -2993,7 +2999,7 @@ MonoBehaviour:
   makeAnswerTextScrollable: 1
   answerScrollPadding: 30
   answerScrollSensitivity: 24
-  floatingItemSpawner: {fileID: 1526063652}
+  floatingItemSpawner: {fileID: 0}
   answerAudioSource: {fileID: 1993532142}
 --- !u!1 &2010844428
 GameObject:
