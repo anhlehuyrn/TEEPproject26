@@ -2705,7 +2705,7 @@ MonoBehaviour:
       transparentPngSprite: {fileID: 1645943763, guid: 93520998adc826a43aa2de1c90215fe3, type: 3}
       animatedSprites: []
       animationFps: 1
-      imageLocalPositionMeters: {x: 0.01, y: -0.035}
+      imageLocalPositionMeters: {x: 0.01, y: -0.02}
       imageSurfaceOffsetMeters: 0.005
       floatForwardMeters: 0.1
       widthMeters: 0.06
