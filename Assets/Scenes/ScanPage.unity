@@ -2678,7 +2678,7 @@ MonoBehaviour:
       textBoxWidthMeters: 0.25
       textBoxHeightMeters: 0
       textLineSpacing: 0
-      textLocalOffsetMeters: {x: 0, y: -0.08, z: 0}
+      textLocalOffsetMeters: {x: 0, y: -0.05, z: 0}
       audioClip: {fileID: 8300000, guid: 054b837faf79c534cb379bc486bb9733, type: 3}
       audioVolume: 1
     - itemName: codau
@@ -2697,7 +2697,7 @@ MonoBehaviour:
       textBoxWidthMeters: 0.25
       textBoxHeightMeters: 0
       textLineSpacing: 0
-      textLocalOffsetMeters: {x: 0, y: -0.08, z: 0}
+      textLocalOffsetMeters: {x: 0, y: -0.05, z: 0}
       audioClip: {fileID: 8300000, guid: 85cb0797c4dcd6c4fa7f386a1b442bc6, type: 3}
       audioVolume: 1
     - itemName: hau
@@ -2735,7 +2735,7 @@ MonoBehaviour:
       textBoxWidthMeters: 0.25
       textBoxHeightMeters: 0
       textLineSpacing: 0
-      textLocalOffsetMeters: {x: 0, y: -0.08, z: 0}
+      textLocalOffsetMeters: {x: 0, y: -0.05, z: 0}
       audioClip: {fileID: 8300000, guid: ba7ad53e492e49447815a9070d9359a3, type: 3}
       audioVolume: 1
     - itemName: levat
@@ -2743,7 +2743,7 @@ MonoBehaviour:
       transparentPngSprite: {fileID: -325661195, guid: daf453e936dda37479e100998c1354a9, type: 3}
       animatedSprites: []
       animationFps: 1
-      imageLocalPositionMeters: {x: -0.01, y: 0.035}
+      imageLocalPositionMeters: {x: -0.01, y: 0.05}
       imageSurfaceOffsetMeters: 0.005
       floatForwardMeters: 0.1
       widthMeters: 0.06
@@ -2754,7 +2754,7 @@ MonoBehaviour:
       textBoxWidthMeters: 0.25
       textBoxHeightMeters: 0
       textLineSpacing: 0
-      textLocalOffsetMeters: {x: 0, y: -0.08, z: 0}
+      textLocalOffsetMeters: {x: 0, y: -0.05, z: 0}
       audioClip: {fileID: 8300000, guid: 2838ce1341dd3794eae62021210fa870, type: 3}
       audioVolume: 1
   floatInSeconds: 5
