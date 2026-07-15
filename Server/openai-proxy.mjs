@@ -6,28 +6,13 @@ import crypto from "node:crypto";
 
 const PORT = Number(process.env.PORT || 8787);
 const API_KEY = process.env.OPENAI_API_KEY;
-<<<<<<< HEAD
-const CHAT_MODEL = process.env.OPENAI_CHAT_MODEL || "gpt-4.1-mini";
-const TRANSCRIBE_MODEL = process.env.OPENAI_TRANSCRIBE_MODEL || "gpt-4o-mini-transcribe";
-const TTS_MODEL = process.env.OPENAI_TTS_MODEL || "gpt-4o-mini-tts";
-=======
 const CHAT_MODEL = process.env.OPENAI_CHAT_MODEL || "gpt-4o-mini"; 
 const TRANSCRIBE_MODEL = process.env.OPENAI_TRANSCRIBE_MODEL || "whisper-1"; 
 const TTS_MODEL = process.env.OPENAI_TTS_MODEL || "tts-1"; 
->>>>>>> restore-dialog
 const TTS_VOICE = process.env.OPENAI_TTS_VOICE || "alloy";
 const AUDIO_DIR = path.resolve(".audio");
 const MAX_BODY_BYTES = 24 * 1024 * 1024;
 
-<<<<<<< HEAD
-const systemPrompt = [
-  "You are a friendly AR museum NPC avatar.",
-  "Answer student questions clearly and briefly.",
-  "Always answer in the same language as the student's question.",
-  "If the student asks in Chinese, answer in Traditional Chinese.",
-  "If the student asks in English, answer in English.",
-  "Keep answers suitable for a classroom AR learning activity."
-=======
 // 1. KHO TRI THỨC VĂN HÓA (Semantic Cultural Knowledge Base)
 const culturalKnowledgeBase = {
   "DongHo": `Artwork: Dong Ho Folk Painting - The Mice's Wedding (Tranh Đông Hồ - Đám cưới chuột). 
@@ -47,7 +32,6 @@ const BASE_SYSTEM_PROMPT = [
   "Auto-detect the user's language (English, Vietnamese, or Chinese) and reply naturally in that exact same language.",
   "Keep your answers concise and strictly under 80 words to suit an AR environment.",
   "If the user asks off-topic questions (e.g., math, coding, politics), gently guide them back to exploring the cultural secrets of the painting."
->>>>>>> restore-dialog
 ].join(" ");
 
 await mkdir(AUDIO_DIR, { recursive: true });
@@ -144,14 +128,11 @@ async function createNpcReply(transcript, body) {
   const npcName = body.npcName || "NPC Avatar";
   const targetName = body.targetName || "the scanned image";
   const context = body.context || "";
-<<<<<<< HEAD
-=======
   
   // 3. TIÊM NGỮ NGHĨA VĂN HÓA VÀO PROMPT
   const deepCulturalContext = culturalKnowledgeBase[targetName] || "Focus on traditional cultural values.";
   const dynamicSystemPrompt = `${BASE_SYSTEM_PROMPT}\n\nCurrent Artwork Context: ${deepCulturalContext}`;
 
->>>>>>> restore-dialog
   const userPrompt = [
     `NPC name: ${npcName}`,
     `Current AR target image: ${targetName}`,
@@ -159,11 +140,7 @@ async function createNpcReply(transcript, body) {
     `Student question: ${transcript}`
   ].filter(Boolean).join("\n");
 
-<<<<<<< HEAD
-  const response = await fetch("https://api.openai.com/v1/responses", {
-=======
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
->>>>>>> restore-dialog
     method: "POST",
     headers: {
       Authorization: `Bearer ${API_KEY}`,
@@ -171,14 +148,9 @@ async function createNpcReply(transcript, body) {
     },
     body: JSON.stringify({
       model: CHAT_MODEL,
-<<<<<<< HEAD
-      input: [
-        { role: "system", content: systemPrompt },
-=======
       temperature: 0.2, // Giữ nguyên mức 0.2 để giảm hallucination
       messages: [
         { role: "system", content: dynamicSystemPrompt },
->>>>>>> restore-dialog
         { role: "user", content: userPrompt }
       ]
     })
@@ -217,27 +189,10 @@ async function synthesizeSpeech(text) {
 }
 
 function extractResponseText(data) {
-<<<<<<< HEAD
-  if (typeof data.output_text === "string") {
-    return data.output_text;
-  }
-
-  const chunks = [];
-  for (const item of data.output || []) {
-    for (const content of item.content || []) {
-      if (typeof content.text === "string") {
-        chunks.push(content.text);
-      }
-    }
-  }
-
-  return chunks.join("\n");
-=======
   if (data.choices && data.choices.length > 0 && data.choices[0].message) {
     return data.choices[0].message.content;
   }
   return "Error: Could not parse AI response.";
->>>>>>> restore-dialog
 }
 
 async function serveAudio(pathname, res) {
@@ -310,8 +265,4 @@ function requireApiKey() {
   if (!API_KEY) {
     throw new Error("OPENAI_API_KEY is not set on the server.");
   }
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> restore-dialog
