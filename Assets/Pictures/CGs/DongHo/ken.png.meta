@@ -117,7 +117,7 @@ TextureImporter:
         y: 24
         width: 170
         height: 344
-      alignment: 0
+      alignment: 9
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
@@ -135,19 +135,19 @@ TextureImporter:
       name: ken_1
       rect:
         serializedVersion: 2
-        x: 203
+        x: 53
         y: 18
-        width: 244
+        width: 393
         height: 350
-      alignment: 0
+      alignment: 9
       pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
+      border: {x: 0, y: 5, z: 0, w: 3}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: a3de0e3cf81f0914b955491e5aff5f30
+      spriteID: e1f3a813976dd8d4b85eb280cfc73c25
       internalID: -1136684801
       vertices: []
       indices: 
@@ -161,7 +161,7 @@ TextureImporter:
         y: 360
         width: 6
         height: 6
-      alignment: 0
+      alignment: 9
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
@@ -169,7 +169,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: d7aacd099f17d174eab4979ff5b6f36d
+      spriteID: f183740dffb30624089fd3c44a67feb7
       internalID: 1369132777
       vertices: []
       indices: 
@@ -183,7 +183,7 @@ TextureImporter:
         y: 294
         width: 6
         height: 6
-      alignment: 0
+      alignment: 9
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
@@ -191,7 +191,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 58b82f15522a8e84a970c08709a0eabb
+      spriteID: f103fe08d1794514b8d363894d1e293c
       internalID: -2142839898
       vertices: []
       indices: 
@@ -205,7 +205,7 @@ TextureImporter:
         y: 242
         width: 24
         height: 4
-      alignment: 0
+      alignment: 9
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
@@ -213,7 +213,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: 102f0b0f7ed996a419ef52664296f357
+      spriteID: da5b763b42358e74c838e68786605938
       internalID: 1996729843
       vertices: []
       indices: 
@@ -227,7 +227,7 @@ TextureImporter:
         y: 0
         width: 18
         height: 18
-      alignment: 0
+      alignment: 9
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
@@ -235,7 +235,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c28706a897b389d419a55c6c4fac8920
+      spriteID: b811f1f685c3fc549baea2889dea97e0
       internalID: -30613084
       vertices: []
       indices: 
@@ -249,7 +249,7 @@ TextureImporter:
         y: 18
         width: 6
         height: 6
-      alignment: 0
+      alignment: 9
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
@@ -257,7 +257,7 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: 0
       bones: []
-      spriteID: c627389bdb8d2b64781378cdd1ca1910
+      spriteID: 8e9fe39230e78db4e9679d74dc197ec7
       internalID: -447227297
       vertices: []
       indices: 
@@ -277,7 +277,9 @@ TextureImporter:
     spriteCustomMetadata:
       entries:
       - key: SpriteEditor.SliceSettings
-        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":64.0,"y":64.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":0,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":459.0,"y":368.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":9,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
+      - key: SpriteEditor.SliceOnImport
+        value: False
     nameFileIdTable:
       ken_0: 718536434
       ken_1: -1136684801

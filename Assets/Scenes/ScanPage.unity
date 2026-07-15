@@ -2648,7 +2648,7 @@ MonoBehaviour:
       transparentPngSprite: {fileID: 2067443639, guid: a2b976b72a1e4d44ca4a5fecc951a189, type: 3}
       animatedSprites: []
       animationFps: 1
-      imageLocalPositionMeters: {x: 0, y: 0}
+      imageLocalPositionMeters: {x: 0.06, y: 0.035}
       imageSurfaceOffsetMeters: 0.005
       floatForwardMeters: 0.1
       widthMeters: 0.06
@@ -2659,7 +2659,7 @@ MonoBehaviour:
       textBoxWidthMeters: 0.25
       textBoxHeightMeters: 0
       textLineSpacing: 0
-      textLocalOffsetMeters: {x: 0, y: -0.001, z: 0}
+      textLocalOffsetMeters: {x: 0, y: -0.1, z: 0}
       audioClip: {fileID: 8300000, guid: 0508d8aa4b8cbef4a9498944e2b4afe1, type: 3}
       audioVolume: 1
     - itemName: chure
@@ -2667,7 +2667,7 @@ MonoBehaviour:
       transparentPngSprite: {fileID: 374368453, guid: 5e942d1e7f201d04a84c6640edb84091, type: 3}
       animatedSprites: []
       animationFps: 1
-      imageLocalPositionMeters: {x: 0, y: 0}
+      imageLocalPositionMeters: {x: 0.06, y: -0.035}
       imageSurfaceOffsetMeters: 0.005
       floatForwardMeters: 0.1
       widthMeters: 0.06
@@ -2678,15 +2678,15 @@ MonoBehaviour:
       textBoxWidthMeters: 0.25
       textBoxHeightMeters: 0
       textLineSpacing: 0
-      textLocalOffsetMeters: {x: 0, y: -0.001, z: 0}
-      audioClip: {fileID: 8300000, guid: 0508d8aa4b8cbef4a9498944e2b4afe1, type: 3}
+      textLocalOffsetMeters: {x: 0, y: -0.1, z: 0}
+      audioClip: {fileID: 8300000, guid: 054b837faf79c534cb379bc486bb9733, type: 3}
       audioVolume: 1
     - itemName: codau
       description: The bride mouse symbolizes harmony and continuity.
       transparentPngSprite: {fileID: -802676414, guid: 4d5024c2b4d17fe4995cd8e23887ad77, type: 3}
       animatedSprites: []
       animationFps: 1
-      imageLocalPositionMeters: {x: 0, y: 0}
+      imageLocalPositionMeters: {x: -0.05, y: -0.035}
       imageSurfaceOffsetMeters: 0.005
       floatForwardMeters: 0.1
       widthMeters: 0.06
@@ -2697,15 +2697,15 @@ MonoBehaviour:
       textBoxWidthMeters: 0.25
       textBoxHeightMeters: 0
       textLineSpacing: 0
-      textLocalOffsetMeters: {x: 0, y: -0.001, z: 0}
-      audioClip: {fileID: 8300000, guid: 0508d8aa4b8cbef4a9498944e2b4afe1, type: 3}
+      textLocalOffsetMeters: {x: 0, y: -0.1, z: 0}
+      audioClip: {fileID: 8300000, guid: 85cb0797c4dcd6c4fa7f386a1b442bc6, type: 3}
       audioVolume: 1
     - itemName: hau
       description: The servant mouse reflects loyalty and duty.
       transparentPngSprite: {fileID: 1645943763, guid: 93520998adc826a43aa2de1c90215fe3, type: 3}
       animatedSprites: []
       animationFps: 1
-      imageLocalPositionMeters: {x: 0, y: 0}
+      imageLocalPositionMeters: {x: 0.01, y: -0.035}
       imageSurfaceOffsetMeters: 0.005
       floatForwardMeters: 0.1
       widthMeters: 0.06
@@ -2716,34 +2716,15 @@ MonoBehaviour:
       textBoxWidthMeters: 0.25
       textBoxHeightMeters: 0
       textLineSpacing: 0
-      textLocalOffsetMeters: {x: 0, y: -0.001, z: 0}
-      audioClip: {fileID: 8300000, guid: 0508d8aa4b8cbef4a9498944e2b4afe1, type: 3}
+      textLocalOffsetMeters: {x: 0, y: -0.1, z: 0}
+      audioClip: {fileID: 8300000, guid: 6af5cb3335d850e41b22bef0132a956f, type: 3}
       audioVolume: 1
-    - itemName: ken1
-      description: The servant mouse reflects loyalty and duty.
-      transparentPngSprite: {fileID: 718536434, guid: bd34bbe5e344cf747bb05c727011515a, type: 3}
-      animatedSprites: []
-      animationFps: 1
-      imageLocalPositionMeters: {x: 0, y: 0}
-      imageSurfaceOffsetMeters: 0.005
-      floatForwardMeters: 0.1
-      widthMeters: 0.06
-      sortingOrder: 10
-      minScaleMultiplier: 0.1
-      maxScaleMultiplier: 2
-      textFontSize: 10
-      textBoxWidthMeters: 0.25
-      textBoxHeightMeters: 0
-      textLineSpacing: 0
-      textLocalOffsetMeters: {x: 0, y: -0.001, z: 0}
-      audioClip: {fileID: 8300000, guid: 0508d8aa4b8cbef4a9498944e2b4afe1, type: 3}
-      audioVolume: 1
-    - itemName: ken2
-      description: The servant mouse reflects loyalty and duty.
+    - itemName: ken
+      description: The trumpet mouse embodies celebration and joy.
       transparentPngSprite: {fileID: -1136684801, guid: bd34bbe5e344cf747bb05c727011515a, type: 3}
       animatedSprites: []
       animationFps: 1
-      imageLocalPositionMeters: {x: 0, y: 0}
+      imageLocalPositionMeters: {x: -0.06, y: 0.035}
       imageSurfaceOffsetMeters: 0.005
       floatForwardMeters: 0.1
       widthMeters: 0.06
@@ -2754,12 +2735,12 @@ MonoBehaviour:
       textBoxWidthMeters: 0.25
       textBoxHeightMeters: 0
       textLineSpacing: 0
-      textLocalOffsetMeters: {x: 0, y: -0.001, z: 0}
-      audioClip: {fileID: 8300000, guid: 0508d8aa4b8cbef4a9498944e2b4afe1, type: 3}
+      textLocalOffsetMeters: {x: 0, y: -0.1, z: 0}
+      audioClip: {fileID: 8300000, guid: ba7ad53e492e49447815a9070d9359a3, type: 3}
       audioVolume: 1
-    - itemName: levat1
+    - itemName: levat
       description: The offering mice signify submission to authority.
-      transparentPngSprite: {fileID: -1693051817, guid: daf453e936dda37479e100998c1354a9, type: 3}
+      transparentPngSprite: {fileID: -965698250, guid: daf453e936dda37479e100998c1354a9, type: 3}
       animatedSprites: []
       animationFps: 1
       imageLocalPositionMeters: {x: 0, y: 0}
@@ -2773,27 +2754,8 @@ MonoBehaviour:
       textBoxWidthMeters: 0.25
       textBoxHeightMeters: 0
       textLineSpacing: 0
-      textLocalOffsetMeters: {x: 0, y: -0.001, z: 0}
-      audioClip: {fileID: 8300000, guid: 0508d8aa4b8cbef4a9498944e2b4afe1, type: 3}
-      audioVolume: 1
-    - itemName: levat2
-      description: The offering mice signify submission to authority.
-      transparentPngSprite: {fileID: 403796567, guid: daf453e936dda37479e100998c1354a9, type: 3}
-      animatedSprites: []
-      animationFps: 1
-      imageLocalPositionMeters: {x: 0, y: 0}
-      imageSurfaceOffsetMeters: 0.005
-      floatForwardMeters: 0.1
-      widthMeters: 0.06
-      sortingOrder: 10
-      minScaleMultiplier: 0.1
-      maxScaleMultiplier: 2
-      textFontSize: 10
-      textBoxWidthMeters: 0.25
-      textBoxHeightMeters: 0
-      textLineSpacing: 0
-      textLocalOffsetMeters: {x: 0, y: -0.001, z: 0}
-      audioClip: {fileID: 8300000, guid: 0508d8aa4b8cbef4a9498944e2b4afe1, type: 3}
+      textLocalOffsetMeters: {x: 0, y: -0.1, z: 0}
+      audioClip: {fileID: 8300000, guid: 2838ce1341dd3794eae62021210fa870, type: 3}
       audioVolume: 1
   floatInSeconds: 5
   resetWhenTrackingFoundAgain: 1
