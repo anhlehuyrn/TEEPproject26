@@ -59,11 +59,8 @@
     <Compile Include="Assets\TEEP_AvatarSpawnEffect\Scripts\TEEPAvatarSpawnEffect.cs" />
     <Compile Include="Assets\Scripts\ARImageScanManager.cs" />
     <Compile Include="Assets\AIChat\AiNpcQuestionController.cs" />
-<<<<<<< HEAD
-=======
     <Compile Include="Assets\Scripts\FungusTalkAnimatorSync.cs" />
     <Compile Include="Assets\Scripts\FloatingItemInteractable.cs" />
->>>>>>> restore-dialog
     <Compile Include="Assets\Scripts\SceneLoader.cs" />
   </ItemGroup>
   <ItemGroup>

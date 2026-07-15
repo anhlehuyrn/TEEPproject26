@@ -1,18 +1,12 @@
 using System;
 using System.Collections;
 using System.Text;
-<<<<<<< HEAD
-using UnityEngine;
-using UnityEngine.Networking;
-using UnityEngine.UI;
-=======
 using TMPro;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 using UnityEngine.XR.ARSubsystems;
->>>>>>> restore-dialog
 
 public class AiNpcQuestionController : MonoBehaviour
 {
@@ -20,12 +14,6 @@ public class AiNpcQuestionController : MonoBehaviour
     [SerializeField] private string serverBaseUrl = "http://127.0.0.1:8787";
 
     [Header("NPC Context")]
-<<<<<<< HEAD
-    [SerializeField] private string npcName = "Dong Ho NPC";
-    [SerializeField] private string targetName = "DongHo";
-    [TextArea(2, 5)]
-    [SerializeField] private string lessonContext = "You are explaining the Dong Ho folk painting to students.";
-=======
     [SerializeField] private string npcName = "Dragon Boat NPC";
     [SerializeField] private string targetName = "DragonBoat";
     [TextArea(2, 5)]
@@ -38,7 +26,6 @@ public class AiNpcQuestionController : MonoBehaviour
     [SerializeField] private Texture2D fallbackTargetImageForVision;
     [Range(1, 100)]
     [SerializeField] private int visionImageJpegQuality = 75;
->>>>>>> restore-dialog
 
     [Header("Recording")]
     [SerializeField] private int sampleRate = 16000;
@@ -46,10 +33,6 @@ public class AiNpcQuestionController : MonoBehaviour
 
     [Header("UI")]
     [SerializeField] private Button askButton;
-<<<<<<< HEAD
-    [SerializeField] private Text statusText;
-    [SerializeField] private Text answerText;
-=======
     [SerializeField] private Text askButtonText;
     [SerializeField] private TMP_Text askButtonTmpText;
     [SerializeField] private Button exploreArtworkButton;
@@ -67,7 +50,6 @@ public class AiNpcQuestionController : MonoBehaviour
 
     [Header("Floating Items")]
     [SerializeField] private ARFloatingItemSpawner floatingItemSpawner;
->>>>>>> restore-dialog
 
     [Header("Audio")]
     [SerializeField] private AudioSource answerAudioSource;
@@ -75,8 +57,6 @@ public class AiNpcQuestionController : MonoBehaviour
     private AudioClip recordingClip;
     private bool isRecording;
     private bool isBusy;
-<<<<<<< HEAD
-=======
     private bool isExploring;
     private bool hasVisibleAnswer;
     private ScrollRect answerScrollRect;
@@ -94,7 +74,6 @@ public class AiNpcQuestionController : MonoBehaviour
             currentScannedTargetName = scannedTargetName;
         }
     }
->>>>>>> restore-dialog
 
     private void Awake()
     {
@@ -102,8 +81,6 @@ public class AiNpcQuestionController : MonoBehaviour
         {
             answerAudioSource = GetComponent<AudioSource>();
         }
-<<<<<<< HEAD
-=======
 
         ConfigureAnswerText();
 
@@ -135,16 +112,11 @@ public class AiNpcQuestionController : MonoBehaviour
         HideAnswerPanels();
         SetAskButtonLabel("Ask AI");
         SetExploreArtworkButtonLabel("Explore Artwork");
->>>>>>> restore-dialog
     }
 
     public void ToggleRecording()
     {
-<<<<<<< HEAD
-        if (isBusy)
-=======
         if (isBusy || isExploring)
->>>>>>> restore-dialog
         {
             return;
         }
@@ -161,11 +133,7 @@ public class AiNpcQuestionController : MonoBehaviour
 
     public void StartRecording()
     {
-<<<<<<< HEAD
-        if (isBusy || isRecording)
-=======
         if (isBusy || isRecording || isExploring)
->>>>>>> restore-dialog
         {
             return;
         }
@@ -185,11 +153,6 @@ public class AiNpcQuestionController : MonoBehaviour
             return;
         }
 
-<<<<<<< HEAD
-        recordingClip = Microphone.Start(null, false, maxRecordingSeconds, sampleRate);
-        isRecording = true;
-        SetStatus("Listening...");
-=======
         ClearCurrentAnswer();
 
         recordingClip = Microphone.Start(null, false, maxRecordingSeconds, sampleRate);
@@ -197,7 +160,6 @@ public class AiNpcQuestionController : MonoBehaviour
         SetStatus("Recording...");
         SetAskButtonLabel("Stop Recording");
         SetExploreArtworkButtonEnabled(false);
->>>>>>> restore-dialog
     }
 
     public void StopRecordingAndAsk()
@@ -214,22 +176,14 @@ public class AiNpcQuestionController : MonoBehaviour
         if (samplePosition <= 0)
         {
             SetStatus("No voice recorded. Try again.");
-<<<<<<< HEAD
-=======
             SetAskButtonLabel("Ask AI");
             SetExploreArtworkButtonEnabled(true);
->>>>>>> restore-dialog
             return;
         }
 
         AudioClip trimmedClip = TrimClip(recordingClip, samplePosition);
         byte[] wavBytes = WavUtility.FromAudioClip(trimmedClip);
 
-<<<<<<< HEAD
-        StartCoroutine(SendQuestionRoutine(wavBytes));
-    }
-
-=======
         SetAskButtonLabel("Sending");
         SetExploreArtworkButtonEnabled(false);
         StartCoroutine(SendQuestionRoutine(wavBytes));
@@ -287,16 +241,12 @@ public class AiNpcQuestionController : MonoBehaviour
         SetExploreArtworkButtonLabel("Explore Artwork");
     }
 
->>>>>>> restore-dialog
     private IEnumerator SendQuestionRoutine(byte[] wavBytes)
     {
         isBusy = true;
         SetButtonEnabled(false);
-<<<<<<< HEAD
-=======
         SetExploreArtworkButtonEnabled(false);
         HideAnswerPanels();
->>>>>>> restore-dialog
         SetStatus("Sending question...");
 
         AskRequest request = new AskRequest
@@ -304,19 +254,12 @@ public class AiNpcQuestionController : MonoBehaviour
             audioBase64 = Convert.ToBase64String(wavBytes),
             mimeType = "audio/wav",
             npcName = npcName,
-<<<<<<< HEAD
-            targetName = targetName,
-            context = lessonContext
-        };
-
-=======
             targetName = GetActiveTargetName(),
             context = lessonContext
         };
 
         AddVisionImageToRequest(request);
 
->>>>>>> restore-dialog
         string json = JsonUtility.ToJson(request);
         byte[] body = Encoding.UTF8.GetBytes(json);
         string askUrl = CombineUrl(serverBaseUrl, "/ask");
@@ -347,18 +290,12 @@ public class AiNpcQuestionController : MonoBehaviour
 
             if (answerText != null)
             {
-<<<<<<< HEAD
-                answerText.text = "Heard: " + response.transcript + "\n\nAI: " + response.reply;
-            }
-
-=======
                 ConfigureAnswerText();
                 answerText.text = "<b>User:</b>   " + response.transcript + "\n<b>AI:</b>   " + response.reply;
                 UpdateAnswerTextLayout();
             }
 
             ShowAnswerPanels();
->>>>>>> restore-dialog
             SetStatus("Answer received.");
 
             if (!string.IsNullOrEmpty(response.audioUrl))
@@ -391,8 +328,6 @@ public class AiNpcQuestionController : MonoBehaviour
         }
     }
 
-<<<<<<< HEAD
-=======
     private void AddVisionImageToRequest(AskRequest request)
     {
         if (!sendTargetImageToAi)
@@ -464,7 +399,6 @@ public class AiNpcQuestionController : MonoBehaviour
         return copy;
     }
 
->>>>>>> restore-dialog
     private AudioClip TrimClip(AudioClip sourceClip, int samplePosition)
     {
         int channels = sourceClip.channels;
@@ -486,31 +420,23 @@ public class AiNpcQuestionController : MonoBehaviour
     {
         isBusy = false;
         SetButtonEnabled(true);
-<<<<<<< HEAD
-=======
         SetExploreArtworkButtonEnabled(true);
         SetAskButtonLabel("Ask AI");
->>>>>>> restore-dialog
     }
 
     private void SetButtonEnabled(bool enabled)
     {
-<<<<<<< HEAD
-=======
         SetAskButtonEnabled(enabled);
     }
 
     private void SetAskButtonEnabled(bool enabled)
     {
->>>>>>> restore-dialog
         if (askButton != null)
         {
             askButton.interactable = enabled;
         }
     }
 
-<<<<<<< HEAD
-=======
     private void SetExploreArtworkButtonEnabled(bool enabled)
     {
         if (exploreArtworkButton != null)
@@ -844,7 +770,6 @@ public class AiNpcQuestionController : MonoBehaviour
         }
     }
 
->>>>>>> restore-dialog
     private void SetStatus(string message)
     {
         if (statusText != null)
@@ -876,11 +801,8 @@ public class AiNpcQuestionController : MonoBehaviour
         public string npcName;
         public string targetName;
         public string context;
-<<<<<<< HEAD
-=======
         public string imageBase64;
         public string imageMimeType;
->>>>>>> restore-dialog
     }
 
     [Serializable]

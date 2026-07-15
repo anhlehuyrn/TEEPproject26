@@ -94,15 +94,9 @@ In Unity:
 
 ```text
 Server Base Url = https://your-ai-npc-server.onrender.com
-<<<<<<< HEAD
-NPC Name = Dong Ho NPC
-Target Name = DongHo
-Lesson Context = You are explaining the Dong Ho folk painting to students.
-=======
 NPC Name = Dragon Boat NPC
 Target Name = DragonBoat
 Lesson Context = the short classroom context for this NPC
->>>>>>> restore-dialog
 ```
 
 5. Drag your Ask button into `Ask Button`.
