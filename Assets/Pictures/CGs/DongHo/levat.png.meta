@@ -113,13 +113,13 @@ TextureImporter:
       name: levat_0
       rect:
         serializedVersion: 2
-        x: 16
-        y: 10
-        width: 484
-        height: 368
-      alignment: 9
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 78, y: 28, z: 0, w: 10}
+        x: 474
+        y: 366
+        width: 12
+        height: 12
+      alignment: 1
+      pivot: {x: 0, y: 1}
+      border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline:
       - - {x: 0, y: -184}
@@ -133,8 +133,96 @@ TextureImporter:
         - {x: -229.5, y: 0}
       tessellationDetail: 0
       bones: []
-      spriteID: 979e4dd779e83ec45b3b870a58c59b98
-      internalID: -965698250
+      spriteID: 6458eafa60c436d449548a994884c7d5
+      internalID: 686308040
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: levat_1
+      rect:
+        serializedVersion: 2
+        x: 12
+        y: 38
+        width: 502
+        height: 327
+      alignment: 1
+      pivot: {x: 0, y: 1}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 0654899023d35314eb390d551f82efb7
+      internalID: -325661195
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: levat_3
+      rect:
+        serializedVersion: 2
+        x: 126
+        y: 24
+        width: 6
+        height: 6
+      alignment: 1
+      pivot: {x: 0, y: 1}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a42199ab43b1cc246aac0655f8c1a51d
+      internalID: -1910348681
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: levat_4
+      rect:
+        serializedVersion: 2
+        x: 198
+        y: 30
+        width: 6
+        height: 6
+      alignment: 1
+      pivot: {x: 0, y: 1}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: aba40c70a3f903b469266189bcb93473
+      internalID: 2071402989
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: levat_5
+      rect:
+        serializedVersion: 2
+        x: 222
+        y: 12
+        width: 6
+        height: 6
+      alignment: 1
+      pivot: {x: 0, y: 1}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d87822525b74da54fb4d68b03e9981bd
+      internalID: 558624212
       vertices: []
       indices: 
       edges: []
@@ -153,9 +241,14 @@ TextureImporter:
     spriteCustomMetadata:
       entries:
       - key: SpriteEditor.SliceSettings
-        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":459.0,"y":368.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.5,"y":0.5},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":9,"pivotUnitMode":0,"slicingType":3,"keepEmptyRects":false,"isAlternate":false}'
+        value: '{"sliceOnImport":false,"gridCellCount":{"x":1.0,"y":1.0},"gridSpriteSize":{"x":514.0,"y":378.0},"gridSpriteOffset":{"x":0.0,"y":0.0},"gridSpritePadding":{"x":0.0,"y":0.0},"pivot":{"x":0.0,"y":1.0},"pivotPixels":{"x":0.0,"y":0.0},"autoSlicingMethod":0,"spriteAlignment":1,"pivotUnitMode":0,"slicingType":0,"keepEmptyRects":false,"isAlternate":false}'
     nameFileIdTable:
-      levat_0: -965698250
+      levat_0: 686308040
+      levat_1: -325661195
+      levat_2: 984317665
+      levat_3: -1910348681
+      levat_4: 2071402989
+      levat_5: 558624212
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -2701,7 +2701,7 @@ MonoBehaviour:
       audioClip: {fileID: 8300000, guid: 85cb0797c4dcd6c4fa7f386a1b442bc6, type: 3}
       audioVolume: 1
     - itemName: hau
-      description: The servant mouse reflects loyalty and duty.
+      description: The servant mice reflects loyalty and duty.
       transparentPngSprite: {fileID: 1645943763, guid: 93520998adc826a43aa2de1c90215fe3, type: 3}
       animatedSprites: []
       animationFps: 1
@@ -2720,7 +2720,7 @@ MonoBehaviour:
       audioClip: {fileID: 8300000, guid: 6af5cb3335d850e41b22bef0132a956f, type: 3}
       audioVolume: 1
     - itemName: ken
-      description: The trumpet mouse embodies celebration and joy.
+      description: The trumpet mice embodies celebration and joy.
       transparentPngSprite: {fileID: -1136684801, guid: bd34bbe5e344cf747bb05c727011515a, type: 3}
       animatedSprites: []
       animationFps: 1
@@ -2740,10 +2740,10 @@ MonoBehaviour:
       audioVolume: 1
     - itemName: levat
       description: The offering mice signify submission to authority.
-      transparentPngSprite: {fileID: -965698250, guid: daf453e936dda37479e100998c1354a9, type: 3}
+      transparentPngSprite: {fileID: -325661195, guid: daf453e936dda37479e100998c1354a9, type: 3}
       animatedSprites: []
       animationFps: 1
-      imageLocalPositionMeters: {x: 0, y: 0}
+      imageLocalPositionMeters: {x: -0.01, y: 0.035}
       imageSurfaceOffsetMeters: 0.005
       floatForwardMeters: 0.1
       widthMeters: 0.06
