@@ -1,0 +1,12 @@
+# Thư mục cache và file tạm của Unity
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Uu]serSettings/
+
+# File tạm hệ điều hành
+.DS_Store
+*.swp
