@@ -15,9 +15,9 @@ public class AiNpcQuestionController : MonoBehaviour
 
     [Header("NPC Context")]
     [SerializeField] private string npcName = "Dragon Boat NPC";
-    [SerializeField] private string targetName = "DragonBoat";
+    [SerializeField] public string targetName = "DragonBoat";
     [TextArea(2, 5)]
-    [SerializeField] private string lessonContext = "You are explaining the Dragon Boat Festival to students.";
+    [SerializeField] public string lessonContext = "You are explaining the Dragon Boat Festival to students.";
 
     [Header("Visual Image Question")]
     [SerializeField] private bool sendTargetImageToAi = true;

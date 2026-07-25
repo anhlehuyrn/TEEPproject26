@@ -5,6 +5,7 @@
   <Project Path="FungusExamples.csproj" />
   <Project Path="FungusEditorTests.csproj" />
   <Project Path="Fungus.FungusLuaJSONCheckerEditor.csproj" />
+  <Project Path="Assembly-CSharp-Editor.csproj" />
   <Project Path="Fungus.FungusLuaEditor.csproj" />
   <Project Path="Fungus.LineEndingsEditor.csproj" />
   <Project Path="FungusPlayModeTests.csproj" />

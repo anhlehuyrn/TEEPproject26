@@ -55,13 +55,18 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\ARFloatingItemSpawner.cs" />
     <Compile Include="Assets\Scripts\ScanSceneAiUiGate.cs" />
+    <Compile Include="Assets\AIContextSwitcher.cs" />
     <Compile Include="Assets\Scripts\ARFungusDialogueTrigger.cs" />
     <Compile Include="Assets\TEEP_AvatarSpawnEffect\Scripts\TEEPAvatarSpawnEffect.cs" />
+    <Compile Include="Assets\PassportManager.cs" />
     <Compile Include="Assets\Scripts\ARImageScanManager.cs" />
+    <Compile Include="Assets\TutorialInfo\Scripts\Readme.cs" />
     <Compile Include="Assets\AIChat\AiNpcQuestionController.cs" />
     <Compile Include="Assets\Scripts\FungusTalkAnimatorSync.cs" />
     <Compile Include="Assets\Scripts\FloatingItemInteractable.cs" />
+    <Compile Include="Assets\BottomNavManager.cs" />
     <Compile Include="Assets\Scripts\SceneLoader.cs" />
+    <Compile Include="Assets\AppController.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile-2-Pass.shader" />
