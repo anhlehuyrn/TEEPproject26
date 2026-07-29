@@ -55,6 +55,7 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\ARFloatingItemSpawner.cs" />
     <Compile Include="Assets\Scripts\ScanSceneAiUiGate.cs" />
+    <Compile Include="Assets\Scripts\AvatarLightFollower.cs" />
     <Compile Include="Assets\AIContextSwitcher.cs" />
     <Compile Include="Assets\Scripts\ARFungusDialogueTrigger.cs" />
     <Compile Include="Assets\TEEP_AvatarSpawnEffect\Scripts\TEEPAvatarSpawnEffect.cs" />
