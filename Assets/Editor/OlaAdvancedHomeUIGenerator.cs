@@ -69,7 +69,7 @@ public static class OlaAdvancedHomeUIGenerator
         headerLayout.childForceExpandWidth = false;
         headerLayout.childForceExpandHeight = false;
 
-        TMP_Dropdown languageDropdown = CreateDropdown("Dropdown_Language", header.transform, new[] { "EN", "VI", "ZH" });
+        TMP_Dropdown languageDropdown = CreateDropdown("Dropdown_Language", header.transform, new[] { "English", "\u7E41\u9AD4\u4E2D\u6587", "\u0D2E\u0D32\u0D2F\u0D3E\u0D33\u0D02", "Ti\u1EBFng Vi\u1EC7t" });
         SetPreferredSize(languageDropdown.gameObject, 150f, 56f);
 
         GameObject logoObject = CreateUIObject("Logo_Image", header.transform);
@@ -136,7 +136,7 @@ public static class OlaAdvancedHomeUIGenerator
 
         CreateCultureCard(content.transform, "Card_Kerala", "Kerala", "God's Own Country. A serene network of backwaters.", "Card_Photo_Kerala");
         CreateCultureCard(content.transform, "Card_Taiwan", "Taiwan", "Living Traditions in Taichung and dramatic gorges.", "Card_Photo_Taiwan");
-        CreateCultureCard(content.transform, "Card_BacNinh", "Bắc Ninh, Vietnam", "The cradle of Quan Họ folk songs and Dong Ho paintings.", "Card_Photo_BacNinh");
+        CreateCultureCard(content.transform, "Card_BacNinh", "Bac Ninh, Vietnam", "The cradle of Quan Ho folk songs and Dong Ho paintings.", "Card_Photo_BacNinh");
 
         scrollRect.viewport = viewport.GetComponent<RectTransform>();
         scrollRect.content = contentRect;
@@ -266,7 +266,7 @@ public static class OlaAdvancedHomeUIGenerator
         labelRect.offsetMax = new Vector2(-42f, 0f);
         dropdown.captionText = label;
 
-        TextMeshProUGUI arrow = CreateTMPText("Arrow", dropdownObject.transform, "▾", 18f, SecondaryText, TextAlignmentOptions.Center);
+        TextMeshProUGUI arrow = CreateTMPText("Arrow", dropdownObject.transform, "\u25BE", 18f, SecondaryText, TextAlignmentOptions.Center);
         RectTransform arrowRect = arrow.GetComponent<RectTransform>();
         arrowRect.anchorMin = new Vector2(1f, 0.5f);
         arrowRect.anchorMax = new Vector2(1f, 0.5f);
@@ -293,10 +293,10 @@ public static class OlaAdvancedHomeUIGenerator
 
         RectTransform templateRect = template.GetComponent<RectTransform>();
         templateRect.anchorMin = new Vector2(0f, 0f);
-        templateRect.anchorMax = new Vector2(1f, 0f);
+        templateRect.anchorMax = new Vector2(0f, 0f);
         templateRect.pivot = new Vector2(0.5f, 1f);
-        templateRect.anchoredPosition = new Vector2(0f, -4f);
-        templateRect.sizeDelta = new Vector2(0f, 180f);
+        templateRect.anchoredPosition = new Vector2(80f, -4f);
+        templateRect.sizeDelta = new Vector2(160f, 180f);
 
         GameObject viewport = CreateUIObject("Viewport", template.transform);
         Image viewportImage = viewport.AddComponent<Image>();

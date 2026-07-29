@@ -5171,8 +5171,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: -12.03, y: 2}
-  m_SizeDelta: {x: -175.9399, y: 145.9318}
+  m_AnchoredPosition: {x: 56, y: -4}
+  m_SizeDelta: {x: 112, y: 180}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &600710150
 MonoBehaviour:
@@ -5597,7 +5597,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0cdd685830f7ef4488b9f3cf4a6bda25, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HomeController
+  m_EditorClassIdentifier: Assembly-CSharp::AppController
   languageDropdown: {fileID: 1336180862}
   locationDropdown: {fileID: 1083513583}
   pageAll: {fileID: 0}
@@ -5606,6 +5606,8 @@ MonoBehaviour:
   pageVietnam: {fileID: 0}
   narrativeTitle: {fileID: 0}
   narrativeBody: {fileID: 174868703}
+  traditionalChineseFont: {fileID: 11400000, guid: ea06cb41e7cdde343a917c1f197f1d5a, type: 2}
+  malayalamFont: {fileID: 11400000, guid: 39aada3198017354784d66ce74ce4b62, type: 2}
 --- !u!114 &694689093
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -8747,7 +8749,7 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 0cdd685830f7ef4488b9f3cf4a6bda25, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::HomeController
+  m_EditorClassIdentifier: Assembly-CSharp::AppController
   languageDropdown: {fileID: 1336180862}
   locationDropdown: {fileID: 1083513583}
   pageAll: {fileID: 0}
@@ -8756,6 +8758,8 @@ MonoBehaviour:
   pageVietnam: {fileID: 0}
   narrativeTitle: {fileID: 471314406}
   narrativeBody: {fileID: 1125845749}
+  traditionalChineseFont: {fileID: 11400000, guid: ea06cb41e7cdde343a917c1f197f1d5a, type: 2}
+  malayalamFont: {fileID: 11400000, guid: 39aada3198017354784d66ce74ce4b62, type: 2}
 --- !u!1 &1253952043
 GameObject:
   m_ObjectHideFlags: 0
@@ -9213,6 +9217,8 @@ MonoBehaviour:
   pageVietnam: {fileID: 1279517558}
   narrativeTitle: {fileID: 471314406}
   narrativeBody: {fileID: 1125845749}
+  traditionalChineseFont: {fileID: 11400000, guid: ea06cb41e7cdde343a917c1f197f1d5a, type: 2}
+  malayalamFont: {fileID: 11400000, guid: 39aada3198017354784d66ce74ce4b62, type: 2}
 --- !u!1 &1336180860
 GameObject:
   m_ObjectHideFlags: 0
@@ -9304,6 +9310,12 @@ MonoBehaviour:
   m_Options:
     m_Options:
     - m_Text: English
+      m_Image: {fileID: 0}
+      m_Color: {r: 1, g: 1, b: 1, a: 1}
+    - m_Text: "\u7E41\u9AD4\u4E2D\u6587"
+      m_Image: {fileID: 0}
+      m_Color: {r: 1, g: 1, b: 1, a: 1}
+    - m_Text: "\u0D2E\u0D32\u0D2F\u0D3E\u0D33\u0D02"
       m_Image: {fileID: 0}
       m_Color: {r: 1, g: 1, b: 1, a: 1}
     - m_Text: "Ti\u1EBFng Vi\u1EC7t"
