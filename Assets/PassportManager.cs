@@ -24,6 +24,13 @@ public class PassportManager : MonoBehaviour
     void OnEnable()
     {
         SyncPassportData();
+        
+        // Tự động đồng bộ ngôn ngữ cho toàn bộ tab Passport khi mở lên
+        AppController app = FindObjectOfType<AppController>(true);
+        if (app != null)
+        {
+            app.UpdateUI();
+        }
     }
 
     public void SyncPassportData()
@@ -31,29 +38,24 @@ public class PassportManager : MonoBehaviour
         int unlockedCount = 0;
 
         // --- KIỂM TRA ĐÀI LOAN ---
-        // Đọc dữ liệu xem đã scan chưa (mặc định là 0 nếu chưa bao giờ scan)
         if (PlayerPrefs.GetInt("Taiwan_Unlocked", 0) == 1)
         {
             unlockedCount++;
-            taiwanLockedGroup.SetActive(false);
-            taiwanUnlockedGroup.SetActive(true);
-            taiwanDateText.text = "Archived " + PlayerPrefs.GetString("Taiwan_Date", "");
+            if (taiwanLockedGroup != null) taiwanLockedGroup.SetActive(false);
+            if (taiwanUnlockedGroup != null) taiwanUnlockedGroup.SetActive(true);
+            if (taiwanDateText != null) taiwanDateText.text = "Archived " + PlayerPrefs.GetString("Taiwan_Date", "");
         }
         else
         {
-            taiwanLockedGroup.SetActive(true);
-            taiwanUnlockedGroup.SetActive(false);
+            if (taiwanLockedGroup != null) taiwanLockedGroup.SetActive(true);
+            if (taiwanUnlockedGroup != null) taiwanUnlockedGroup.SetActive(false);
         }
-
-        // --- (Thêm code kiểm tra cho Kerala và Vietnam tương tự ở đây) ---
 
         // --- CẬP NHẬT VÒNG TRÒN TIẾN ĐỘ ---
         float progress = (float)unlockedCount / totalCultures;
         
-        // Tự động gọt vòng tròn
         if (progressCircle != null) progressCircle.fillAmount = progress;
         
-        // Cập nhật các con số
         if (progressText != null) progressText.text = Mathf.RoundToInt(progress * 100) + "%";
         if (completedCountText != null) completedCountText.text = unlockedCount.ToString();
         if (remainingCountText != null) remainingCountText.text = (totalCultures - unlockedCount).ToString();

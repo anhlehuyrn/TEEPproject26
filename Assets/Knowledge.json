@@ -1,0 +1,166 @@
+{
+  "Navigation": {
+    "Home": {
+      "en": "Home",
+      "zh": "首頁",
+      "ml": "ഹോം",
+      "vi": "Trang chủ"
+    },
+    "Explore": {
+      "en": "Explore",
+      "zh": "探索",
+      "ml": "അന്വേഷിക്കുക",
+      "vi": "Khám phá"
+    },
+    "Passport": {
+      "en": "Passport",
+      "zh": "護照",
+      "ml": "പാസ്പോർട്ട്",
+      "vi": "Hộ chiếu"
+    },
+    "Ask_AI": {
+      "en": "Ask AI",
+      "zh": "詢問 AI",
+      "ml": "AI-യോട് ചോദിക്കുക",
+      "vi": "Hỏi AI"
+    }
+  },
+
+  "UI_Labels": {
+    "Current_Region": {
+      "en": "CURRENT REGION",
+      "zh": "當前地區",
+      "ml": "നിലവിലെ പ്രദേശം",
+      "vi": "KHU VỰC HIỆN TẠI"
+    },
+    "Journey_Progress": {
+      "en": "Journey Progress",
+      "zh": "旅程進度",
+      "ml": "യാത്രാ പുരോഗതി",
+      "vi": "Tiến trình hành trình"
+    },
+    "Stamp_Collection": {
+      "en": "Stamp Collection",
+      "zh": "集章收藏",
+      "ml": "സ്റ്റാമ്പ് ശേഖരം",
+      "vi": "Bộ sưu tập con dấu"
+    },
+    "Camera_Instruction": {
+      "en": "Point camera at any pictures to discover.",
+      "zh": "將相機對準任何圖片來發現內容。",
+      "ml": "കണ്ടെത്താൻ ക്യാമറ ചിത്രങ്ങളിലേക്ക് ചൂണ്ടുക.",
+      "vi": "Hướng camera vào hình ảnh để khám phá."
+    }
+  },
+
+  "Narrative_Texts": {
+    "All_Title": {
+      "en": "Three Worlds, One Journey",
+      "zh": "三個世界，一段旅程",
+      "ml": "മൂന്ന് ലോകങ്ങൾ, ഒരു യാത്ര",
+      "vi": "Ba Thế Giới, Một Hành Trình"
+    },
+    "All_Body": {
+      "en": "Trace the subtle threads connecting the backwaters of Kerala, the resilient gorges of Taiwan, and the timeless waters of Vietnam. A curated exploration of shared human heritage.",
+      "zh": "探索喀拉拉邦的迴水、台灣的堅韌峽谷與越南的永恆水域之間的微妙聯繫。一場對人類共同遺產的精心探索。",
+      "ml": "കേരളത്തിലെ കായലുകളും തായ്‌വാനിലെ മലയിടുക്കുകളും വിയറ്റ്നാമിലെ ജലാശയങ്ങളും തമ്മിലുള്ള ബന്ധം കണ്ടെത്തുക. മനുഷ്യ പൈതൃകത്തിന്റെ ഒരു അന്വേഷണം.",
+      "vi": "Khám phá sự giao thoa văn hóa giữa Kerala, Đài Loan và Việt Nam. Một hành trình lưu giữ di sản nhân loại."
+    },
+"Taiwan_Title": {
+      "en": "Taiwan: Living Traditions",
+      "zh": "台灣：活著的傳統",
+      "ml": "തായ്‌വാൻ: ജീവിക്കുന്ന പാരമ്പര്യങ്ങൾ",
+      "vi": "Đài Loan: Truyền Thống Sống Động"
+    },
+    "Taiwan_Body": {
+      "en": "Taiwan, Ilha Formosa, is a land of dramatic gorges, bustling night markets, and deep cultural traditions, where breathtaking natural landscapes meet vibrant urban life.",
+      "zh": "台灣，福爾摩沙，這片土地擁有壯麗的峽谷、熙熙攘攘的夜市和深厚的文化傳統，令人驚嘆的自然景觀與充滿活力的都市生活在此交會。",
+      "ml": "മനോഹരമായ ദ്വീപായ തായ്‌വാൻ, അതിശയകരമായ മലയിടുക്കുകളുടെയും തിരക്കേറിയ രാത്രി വിപണികളുടെയും ആഴത്തിലുള്ള സാംസ്കാരിക പാരമ്പര്യങ്ങളുടെയും നാടാണ്, ഇവിടെ പ്രകൃതിദൃശ്യങ്ങൾ സജീവമായ നഗരജീവിതവുമായി സംഗമിക്കുന്നു.",
+      "vi": "Đài Loan, hòn đảo Formosa xinh đẹp, là vùng đất của những hẻm núi hùng vĩ, những khu chợ đêm sầm uất và truyền thống văn hóa lâu đời, nơi cảnh quan thiên nhiên ngoạn mục giao thoa cùng nhịp sống đô thị sôi động."
+    },
+    "Kerala_Title": {
+      "en": "Kerala: God's Own Country",
+      "zh": "喀拉拉邦：上帝的國度",
+      "ml": "കേരളം: ദൈവത്തിന്റെ സ്വന്തം നാട്",
+      "vi": "Kerala: Vùng Đất Của Thượng Đế"
+    },
+    "Kerala_Body": {
+      "en": "Kerala, God’s Own Country, is a land of tranquil backwaters, lush tea plantations, and ancient temples, where natural beauty and vibrant traditions blend seamlessly.",
+      "zh": "喀拉拉邦，上帝的國度，是一片擁有寧靜迴水、翠綠茶園和古老寺廟的土地，這裡的自然美景與充滿活力的傳統完美交融。",
+      "ml": "ദൈവത്തിന്റെ സ്വന്തം നാടായ കേരളം, ശാന്തമായ കായലുകളും സമൃദ്ധമായ തേയിലത്തോട്ടങ്ങളും പുരാതന ക്ഷേത്രങ്ങളുമുള്ള ഒരു നാടാണ്, ഇവിടെ പ്രകൃതിസൗന്ദര്യവും സജീവമായ പാരമ്പര്യങ്ങളും തടസ്സങ്ങളില്ലാതെ ലയിക്കുന്നു.",
+      "vi": "Kerala, Vùng Đất Của Thượng Đế, là xứ sở của những vùng sông nước thanh bình, những đồi chè xanh mướt và các ngôi đền cổ kính, nơi vẻ đẹp thiên nhiên và truyền thống rực rỡ hòa quyện liền mạch."
+    },
+    "Vietnam_Title": {
+      "en": "Vietnam: Ascending Dragon",
+      "zh": "越南：昇龍之地",
+      "ml": "വിയറ്റ്നാം: ഉയരുന്ന ഡ്രാഗൺ",
+      "vi": "Việt Nam: Rồng Bay Lên"
+    },
+    "Vietnam_Body": {
+      "en": "Vietnam is a country of striking limestone karsts, jade-green waters, and vibrant cultural heritage, where breathtaking natural landscapes harmonize with bustling cities and timeless traditions.",
+      "zh": "越南是一個擁有引人注目的石灰岩喀斯特地貌、翠綠水域和充滿活力的文化遺產的國家，令人驚嘆的自然景觀與繁華的城市和永恆的傳統在此和諧共存。",
+      "ml": "ശ്രദ്ധേയമായ ചുണ്ണാമ്പുകല്ല് പർവതങ്ങളുടെയും മരതകപ്പച്ച വെള്ളത്തിന്റെയും സജീവമായ സാംസ്കാരിക പൈതൃകത്തിന്റെയും രാജ്യമാണ് വിയറ്റ്നാം, അവിടെ അതിശയിപ്പിക്കുന്ന പ്രകൃതിദൃശ്യങ്ങൾ തിരക്കേറിയ നഗരങ്ങളുമായും കാലാതീതമായ പാരമ്പര്യങ്ങളുമായും സമന്വയിക്കുന്നു.",
+      "vi": "Việt Nam là quốc gia của những dãy núi đá vôi nổi bật, làn nước xanh ngọc bích và di sản văn hóa rực rỡ, nơi cảnh quan thiên nhiên ngoạn mục hài hòa với những thành phố nhộn nhịp và truyền thống vượt thời gian."
+    }
+  },
+
+  "Explore_Cards": {
+    "Explore_Kerala": {
+      "en": "Explore Kerala",
+      "zh": "探索喀拉拉",
+      "ml": "കേരളം അന്വേഷിക്കുക",
+      "vi": "Khám phá Kerala"
+    },
+    "Explore_Taiwan": {
+      "en": "Explore Taiwan",
+      "zh": "探索台灣",
+      "ml": "തായ്‌വാൻ അന്വേഷിക്കുക",
+      "vi": "Khám phá Đài Loan"
+    },
+    "Explore_Vietnam": {
+      "en": "Explore Vietnam",
+      "zh": "探索越南",
+      "ml": "വിയറ്റ്നാം അന്വേഷിക്കുക",
+      "vi": "Khám phá Việt Nam"
+    }
+  },
+
+  "Artifacts": {
+    "Taiwan_Lantern": {
+      "en": "Taiwan Lantern Festival",
+      "zh": "台灣燈會",
+      "ml": "തായ്‌വാൻ ലാൻ്റേൺ ഉത്സവം",
+      "vi": "Lễ hội đèn lồng Đài Loan"
+    },
+    "Taiwan_Clothing": {
+      "en": "Taiwan Indigenous Traditional Clothing",
+      "zh": "台灣原住民傳統服飾",
+      "ml": "തായ്‌വാൻ ആദിവാസി വസ്ത്രം",
+      "vi": "Trang phục truyền thống bản địa Đài Loan"
+    },
+    "Dong_Ky_Festival": {
+      "en": "Dong Ky Festival",
+      "zh": "東奇節",
+      "ml": "ഡോങ് കി ഉത്സവം",
+      "vi": "Lễ hội Đồng Kỵ"
+    },
+    "Phu_The_Cake": {
+      "en": "Phu The Cake",
+      "zh": "夫妻餅",
+      "ml": "ഫു തേ കേക്ക്",
+      "vi": "Bánh phu thê"
+    },
+    "Vietnamese_Dress": {
+      "en": "Vietnamese Four-part Dress",
+      "zh": "越南四身衣",
+      "ml": "വിയറ്റ്നാമീസ് നാൽ ഭാഗ വസ്ത്രം",
+      "vi": "Áo tứ thân"
+    },
+    "Beef_Noodle": {
+      "en": "Beef Noodle",
+      "zh": "牛肉麵",
+      "ml": "ബീഫ് നൂഡിൽ",
+      "vi": "Mì bò"
+    }
+  }
+}

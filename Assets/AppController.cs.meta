@@ -1,2 +1,22 @@
 fileFormatVersion: 2
 guid: 0cdd685830f7ef4488b9f3cf4a6bda25
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - jsonFile: {fileID: 4900000, guid: 68f40b97c7c776f4ca350adcb554c58a, type: 3}
+  - languageDropdown: {instanceID: 0}
+  - locationDropdown: {instanceID: 0}
+  - pageAll: {instanceID: 0}
+  - pageTaiwan: {instanceID: 0}
+  - pageKerala: {instanceID: 0}
+  - pageVietnam: {instanceID: 0}
+  - narrativeTitle: {instanceID: 0}
+  - narrativeBody: {instanceID: 0}
+  - traditionalChineseFont: {instanceID: 0}
+  - malayalamFont: {instanceID: 0}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

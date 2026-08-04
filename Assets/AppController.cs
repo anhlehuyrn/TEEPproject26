@@ -2,10 +2,31 @@ using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 
+// Structure for JSON translation deserialization
+[System.Serializable]
+public class TranslationItem
+{
+    public string key;
+    public string en;
+    public string zh;
+    public string ml;
+    public string vi;
+}
+
+[System.Serializable]
+public class TranslationData
+{
+    public List<TranslationItem> items;
+}
+
 public class AppController : MonoBehaviour
 {
     private const string TraditionalChineseGeneratedFontPath = "OLA_Fonts/OLA_NotoSansTC_Language SDF";
     private const string MalayalamGeneratedFontPath = "OLA_Fonts/OLA_NotoSansMalayalam_Language SDF";
+
+    [Header("Localization Settings")]
+    public TextAsset jsonFile; // JSON file assigned in Inspector (or auto-loaded from Resources)
+    private readonly Dictionary<string, TranslationItem> dictionary = new Dictionary<string, TranslationItem>();
 
     [Header("Dropdown Selectors")]
     public TMP_Dropdown languageDropdown;
@@ -24,6 +45,7 @@ public class AppController : MonoBehaviour
     private CardTextRefs keralaCard;
     private CardTextRefs taiwanCard;
     private CardTextRefs vietnamCard;
+
     private readonly Dictionary<TextMeshProUGUI, string> originalTextKeys = new Dictionary<TextMeshProUGUI, string>();
     private readonly Dictionary<TextMeshProUGUI, TMP_FontAsset> originalTextFonts = new Dictionary<TextMeshProUGUI, TMP_FontAsset>();
 
@@ -39,7 +61,7 @@ public class AppController : MonoBehaviour
         "Ti\u1EBFng Vi\u1EC7t"
     };
 
-    private enum Language
+    public enum Language
     {
         English = 0,
         TraditionalChinese = 1,
@@ -53,55 +75,132 @@ public class AppController : MonoBehaviour
         public TextMeshProUGUI Description;
     }
 
+    private void Awake()
+    {
+        AutoFindUnassignedReferences();
+    }
+
+    private void OnEnable()
+    {
+        AutoFindUnassignedReferences();
+        LoadJSON();
+        LoadGeneratedLanguageFonts();
+        ConfigureLanguageDropdown();
+        UpdateUI();
+    }
+
     private void Start()
     {
+        AutoFindUnassignedReferences();
+        LoadJSON();
         LoadGeneratedLanguageFonts();
         CacheOriginalTextKeys();
         CacheCardTexts();
         ConfigureFontFallbacks();
         ConfigureLanguageDropdown();
-        ConfigureLocationDropdown(Language.English);
+        ConfigureLocationDropdown(GetSelectedLanguage());
 
         if (locationDropdown != null)
         {
+            locationDropdown.onValueChanged.RemoveAllListeners();
             locationDropdown.onValueChanged.AddListener(delegate { UpdateUI(); });
         }
 
         if (languageDropdown != null)
         {
-            languageDropdown.onValueChanged.AddListener(delegate { UpdateUI(); });
+            languageDropdown.onValueChanged.RemoveAllListeners();
+            languageDropdown.onValueChanged.AddListener(delegate { 
+                PlayerPrefs.SetInt("SavedLanguage", languageDropdown.value);
+                PlayerPrefs.Save();
+                UpdateUI(); 
+            });
         }
 
         UpdateUI();
     }
 
-    private void LoadGeneratedLanguageFonts()
+    private void AutoFindUnassignedReferences()
     {
-        TMP_FontAsset generatedTraditionalChineseFont = Resources.Load<TMP_FontAsset>(TraditionalChineseGeneratedFontPath);
-        if (generatedTraditionalChineseFont != null)
+        if (languageDropdown == null)
         {
-            traditionalChineseFont = generatedTraditionalChineseFont;
-        }
-        else
-        {
-            Debug.LogWarning("OLA Traditional Chinese font is missing. In Unity, stop Play Mode and run OLA > Rebuild Language Fonts.");
+            GameObject obj = GameObject.Find("LanguageDropdown") ?? GameObject.Find("Dropdown_Language");
+            if (obj != null) languageDropdown = obj.GetComponent<TMP_Dropdown>();
+            if (languageDropdown == null) languageDropdown = FindObjectOfType<TMP_Dropdown>(true);
         }
 
-        TMP_FontAsset generatedMalayalamFont = Resources.Load<TMP_FontAsset>(MalayalamGeneratedFontPath);
-        if (generatedMalayalamFont != null)
+        if (locationDropdown == null)
         {
-            malayalamFont = generatedMalayalamFont;
+            GameObject obj = GameObject.Find("LocationDropdown") ?? GameObject.Find("Dropdown_Location");
+            if (obj != null) locationDropdown = obj.GetComponent<TMP_Dropdown>();
+        }
+
+        if (pageAll == null) pageAll = GameObject.Find("Page_All");
+        if (pageTaiwan == null) pageTaiwan = GameObject.Find("Page_Taiwan");
+        if (pageKerala == null) pageKerala = GameObject.Find("Page_Kerala");
+        if (pageVietnam == null) pageVietnam = GameObject.Find("Page_Vietnam");
+
+        if (narrativeTitle == null)
+        {
+            GameObject obj = GameObject.Find("NarrativeTitle") ?? GameObject.Find("Text_NarrativeTitle");
+            if (obj != null) narrativeTitle = obj.GetComponent<TextMeshProUGUI>();
+        }
+
+        if (narrativeBody == null)
+        {
+            GameObject obj = GameObject.Find("NarrativeBody") ?? GameObject.Find("Text_NarrativeBody");
+            if (obj != null) narrativeBody = obj.GetComponent<TextMeshProUGUI>();
+        }
+    }
+
+    private void LoadJSON()
+    {
+        if (dictionary.Count > 0) return;
+
+        if (jsonFile == null)
+        {
+            jsonFile = Resources.Load<TextAsset>("localization");
+        }
+
+        if (jsonFile != null)
+        {
+            TranslationData data = JsonUtility.FromJson<TranslationData>(jsonFile.text);
+            if (data != null && data.items != null)
+            {
+                foreach (var item in data.items)
+                {
+                    if (string.IsNullOrEmpty(item.key)) continue;
+                    
+                    dictionary[item.key] = item;
+                    string norm = NormalizeText(item.key);
+                    if (!dictionary.ContainsKey(norm))
+                    {
+                        dictionary[norm] = item;
+                    }
+                }
+            }
         }
         else
         {
-            Debug.LogWarning("OLA Malayalam font is missing. In Unity, stop Play Mode and run OLA > Rebuild Language Fonts.");
+            Debug.LogWarning("localization.json not found in jsonFile or Resources/localization!");
+        }
+    }
+
+    private void LoadGeneratedLanguageFonts()
+    {
+        if (traditionalChineseFont == null)
+        {
+            traditionalChineseFont = Resources.Load<TMP_FontAsset>(TraditionalChineseGeneratedFontPath);
+        }
+        
+        if (malayalamFont == null)
+        {
+            malayalamFont = Resources.Load<TMP_FontAsset>(MalayalamGeneratedFontPath);
         }
     }
 
     private void ConfigureFontFallbacks()
     {
         TMP_FontAsset[] fallbackFonts = { traditionalChineseFont, malayalamFont };
-
         foreach (TextMeshProUGUI text in FindObjectsOfType<TextMeshProUGUI>(true))
         {
             AddFallbacksToFont(text.font, fallbackFonts);
@@ -109,35 +208,24 @@ public class AppController : MonoBehaviour
 
         foreach (TMP_FontAsset fallbackFont in fallbackFonts)
         {
-            if (fallbackFont == null || TMP_Settings.fallbackFontAssets.Contains(fallbackFont))
-            {
-                continue;
-            }
-
+            if (fallbackFont == null || TMP_Settings.fallbackFontAssets.Contains(fallbackFont)) continue;
             TMP_Settings.fallbackFontAssets.Add(fallbackFont);
         }
     }
 
     private static void AddFallbacksToFont(TMP_FontAsset font, IEnumerable<TMP_FontAsset> fallbackFonts)
     {
-        if (font == null)
-        {
-            return;
-        }
-
+        if (font == null) return;
         foreach (TMP_FontAsset fallbackFont in fallbackFonts)
         {
-            if (fallbackFont == null || font.fallbackFontAssetTable.Contains(fallbackFont))
-            {
-                continue;
-            }
-
+            if (fallbackFont == null || font.fallbackFontAssetTable.Contains(fallbackFont)) continue;
             font.fallbackFontAssetTable.Add(fallbackFont);
         }
     }
 
     public void UpdateUI()
     {
+        AutoFindUnassignedReferences();
         int locIndex = locationDropdown != null ? locationDropdown.value : 0;
         Language language = GetSelectedLanguage();
 
@@ -147,39 +235,36 @@ public class AppController : MonoBehaviour
         if (pageVietnam != null) pageVietnam.SetActive(locIndex == 3);
 
         ApplyLanguageFont(language);
+        CacheOriginalTextKeys();
         ApplyGlobalTranslations(language);
         ConfigureLocationDropdown(language);
         if (languageDropdown != null) languageDropdown.RefreshShownValue();
         ApplyCardTexts(language);
 
-        if (narrativeTitle == null || narrativeBody == null)
+        if (narrativeTitle != null && narrativeBody != null)
         {
-            return;
+            ApplyNarrativeText(locIndex, language);
         }
-
-        ApplyNarrativeText(locIndex, language);
     }
 
     private void CacheOriginalTextKeys()
     {
-        originalTextKeys.Clear();
-        originalTextFonts.Clear();
-
         foreach (TextMeshProUGUI text in FindObjectsOfType<TextMeshProUGUI>(true))
         {
-            originalTextFonts[text] = text.font;
+            if (text == null) continue;
 
-            if (languageDropdown != null && text.transform.IsChildOf(languageDropdown.transform))
+            if (!originalTextFonts.ContainsKey(text))
             {
-                continue;
+                originalTextFonts[text] = text.font;
             }
 
-            if (locationDropdown != null && text.transform.IsChildOf(locationDropdown.transform))
-            {
-                continue;
-            }
+            if (languageDropdown != null && text.transform.IsChildOf(languageDropdown.transform)) continue;
+            if (locationDropdown != null && text.transform.IsChildOf(locationDropdown.transform)) continue;
 
-            originalTextKeys[text] = NormalizeText(text.text);
+            if (!originalTextKeys.ContainsKey(text))
+            {
+                originalTextKeys[text] = NormalizeText(text.text);
+            }
         }
     }
 
@@ -189,44 +274,24 @@ public class AppController : MonoBehaviour
 
         foreach (KeyValuePair<TextMeshProUGUI, string> entry in originalTextKeys)
         {
-            if (entry.Key == null)
-            {
-                continue;
-            }
+            if (entry.Key == null) continue;
 
             string translatedText = TranslateText(entry.Value, language);
-            if (string.IsNullOrEmpty(translatedText))
-            {
-                continue;
-            }
+            if (string.IsNullOrEmpty(translatedText)) continue;
 
             entry.Key.text = translatedText;
-            if (font != null && entry.Value != "OLA")
-            {
-                entry.Key.font = font;
-            }
-            else if (originalTextFonts.ContainsKey(entry.Key))
-            {
-                entry.Key.font = originalTextFonts[entry.Key];
-            }
-
+            if (font != null && entry.Value != "OLA") entry.Key.font = font;
+            else if (originalTextFonts.ContainsKey(entry.Key)) entry.Key.font = originalTextFonts[entry.Key];
+            
             entry.Key.ForceMeshUpdate();
         }
     }
 
     private static string NormalizeText(string text)
     {
-        if (string.IsNullOrEmpty(text))
-        {
-            return string.Empty;
-        }
-
+        if (string.IsNullOrEmpty(text)) return string.Empty;
         string normalized = text.Replace("\r", " ").Replace("\n", " ").Replace("\t", " ").Trim();
-        while (normalized.Contains("  "))
-        {
-            normalized = normalized.Replace("  ", " ");
-        }
-
+        while (normalized.Contains("  ")) normalized = normalized.Replace("  ", " ");
         return normalized;
     }
 
@@ -240,10 +305,7 @@ public class AppController : MonoBehaviour
     private static CardTextRefs FindCardTextRefs(string cardName)
     {
         GameObject card = GameObject.Find(cardName);
-        if (card == null)
-        {
-            return new CardTextRefs();
-        }
+        if (card == null) return new CardTextRefs();
 
         Transform title = FindChildRecursive(card.transform, "Title");
         Transform description = FindChildRecursive(card.transform, "Description");
@@ -259,18 +321,10 @@ public class AppController : MonoBehaviour
     {
         foreach (Transform child in parent)
         {
-            if (child.name == childName)
-            {
-                return child;
-            }
-
+            if (child.name == childName) return child;
             Transform match = FindChildRecursive(child, childName);
-            if (match != null)
-            {
-                return match;
-            }
+            if (match != null) return match;
         }
-
         return null;
     }
 
@@ -278,9 +332,9 @@ public class AppController : MonoBehaviour
     {
         TMP_FontAsset font = GetFontForLanguage(language);
 
-        SetCardText(keralaCard, GetCardTitle("Kerala", language), GetCardDescription("Kerala", language), font);
-        SetCardText(taiwanCard, GetCardTitle("Taiwan", language), GetCardDescription("Taiwan", language), font);
-        SetCardText(vietnamCard, GetCardTitle("Vietnam", language), GetCardDescription("Vietnam", language), font);
+        SetCardText(keralaCard, TranslateText("Kerala", language), TranslateText("Kerala, God’s Own Country, is a land of tranquil backwaters, lush tea plantations, and ancient temples, where natural beauty and vibrant traditions blend seamlessly.", language), font);
+        SetCardText(taiwanCard, TranslateText("Taiwan", language), TranslateText("Taiwan, Ilha Formosa, is a land of dramatic gorges, bustling night markets, and deep cultural traditions, where breathtaking natural landscapes meet vibrant urban life.", language), font);
+        SetCardText(vietnamCard, TranslateText("Vietnam", language), TranslateText("Vietnam is a country of striking limestone karsts, jade-green waters, and vibrant cultural heritage, where breathtaking natural landscapes harmonize with bustling cities and timeless traditions.", language), font);
     }
 
     private static void SetCardText(CardTextRefs card, string title, string description, TMP_FontAsset font)
@@ -302,14 +356,12 @@ public class AppController : MonoBehaviour
 
     private void ConfigureLanguageDropdown()
     {
-        if (languageDropdown == null)
-        {
-            return;
-        }
+        if (languageDropdown == null) return;
 
-        int selectedValue = Mathf.Clamp(languageDropdown.value, 0, LanguageOptions.Length - 1);
+        int savedValue = PlayerPrefs.GetInt("SavedLanguage", 0);
+        int selectedValue = Mathf.Clamp(savedValue, 0, LanguageOptions.Length - 1);
+        
         languageDropdown.options.Clear();
-
         foreach (string option in LanguageOptions)
         {
             languageDropdown.options.Add(new TMP_Dropdown.OptionData(option));
@@ -321,25 +373,18 @@ public class AppController : MonoBehaviour
 
     private void ConfigureLocationDropdown(Language language)
     {
-        if (locationDropdown == null)
-        {
-            return;
-        }
+        if (locationDropdown == null) return;
 
         int selectedValue = locationDropdown.value;
-        string[] options =
-        {
-            TranslateLocationOption("All", language),
-            TranslateLocationOption("Taiwan", language),
-            TranslateLocationOption("India (Kerala)", language),
-            TranslateLocationOption("Vietnam (Bac Ninh)", language)
+        string[] options = {
+            TranslateText("All", language),
+            TranslateText("Taiwan", language),
+            TranslateText("India (Kerala)", language),
+            TranslateText("Vietnam (Bac Ninh)", language)
         };
 
         locationDropdown.options.Clear();
-        foreach (string option in options)
-        {
-            locationDropdown.options.Add(new TMP_Dropdown.OptionData(option));
-        }
+        foreach (string option in options) locationDropdown.options.Add(new TMP_Dropdown.OptionData(option));
 
         locationDropdown.value = Mathf.Clamp(selectedValue, 0, options.Length - 1);
         locationDropdown.RefreshShownValue();
@@ -347,13 +392,12 @@ public class AppController : MonoBehaviour
 
     private Language GetSelectedLanguage()
     {
-        if (languageDropdown == null)
+        int savedValue = PlayerPrefs.GetInt("SavedLanguage", 0);
+        if (languageDropdown != null)
         {
-            return Language.English;
+            savedValue = languageDropdown.value;
         }
-
-        int value = Mathf.Clamp(languageDropdown.value, 0, LanguageOptions.Length - 1);
-        return (Language)value;
+        return (Language)Mathf.Clamp(savedValue, 0, LanguageOptions.Length - 1);
     }
 
     private void ApplyLanguageFont(Language language)
@@ -363,258 +407,249 @@ public class AppController : MonoBehaviour
         {
             RestoreOriginalFont(narrativeTitle);
             RestoreOriginalFont(narrativeBody);
-
             if (languageDropdown != null)
             {
                 foreach (TextMeshProUGUI text in languageDropdown.GetComponentsInChildren<TextMeshProUGUI>(true))
-                {
                     RestoreOriginalFont(text);
-                }
             }
-
             return;
         }
 
         if (narrativeTitle != null) narrativeTitle.font = font;
         if (narrativeBody != null) narrativeBody.font = font;
 
-        if (languageDropdown == null)
+        if (languageDropdown != null)
         {
-            return;
+            foreach (TextMeshProUGUI text in languageDropdown.GetComponentsInChildren<TextMeshProUGUI>(true))
+            {
+                text.font = font;
+                AddFallbacksToFont(text.font, new[] { traditionalChineseFont, malayalamFont });
+            }
+            languageDropdown.RefreshShownValue();
         }
-
-        foreach (TextMeshProUGUI text in languageDropdown.GetComponentsInChildren<TextMeshProUGUI>(true))
-        {
-            text.font = font;
-            AddFallbacksToFont(text.font, new[] { traditionalChineseFont, malayalamFont });
-        }
-
-        languageDropdown.RefreshShownValue();
     }
 
     private void RestoreOriginalFont(TextMeshProUGUI text)
     {
-        if (text != null && originalTextFonts.ContainsKey(text))
-        {
-            text.font = originalTextFonts[text];
-        }
+        if (text != null && originalTextFonts.ContainsKey(text)) text.font = originalTextFonts[text];
     }
 
     private TMP_FontAsset GetFontForLanguage(Language language)
     {
         switch (language)
         {
-            case Language.TraditionalChinese:
-                return traditionalChineseFont;
-            case Language.Malayalam:
-                return malayalamFont;
-            default:
-                return null;
+            case Language.TraditionalChinese: return traditionalChineseFont;
+            case Language.Malayalam: return malayalamFont;
+            default: return null;
         }
     }
 
     private void ApplyNarrativeText(int locationIndex, Language language)
     {
-        string title;
-        string body;
+        string titleKey = "Three Worlds, One Journey";
+        string bodyKey = "Trace the subtle threads connecting the backwaters of Kerala, the resilient gorges of Taiwan, and the timeless waters of Vietnam. A curated exploration of shared human heritage.";
 
         switch (locationIndex)
         {
             case 1:
-                GetTaiwanText(language, out title, out body);
+                titleKey = "Taiwan: Living Traditions";
+                bodyKey = "Taiwan, Ilha Formosa, is a land of dramatic gorges, bustling night markets, and deep cultural traditions, where breathtaking natural landscapes meet vibrant urban life.";
                 break;
             case 2:
-                GetKeralaText(language, out title, out body);
+                titleKey = "Kerala: God's Own Country";
+                bodyKey = "Kerala, God’s Own Country, is a land of tranquil backwaters, lush tea plantations, and ancient temples, where natural beauty and vibrant traditions blend seamlessly.";
                 break;
             case 3:
-                GetVietnamText(language, out title, out body);
-                break;
-            default:
-                GetAllText(language, out title, out body);
+                titleKey = "Vietnam: Ascending Dragon";
+                bodyKey = "Vietnam is a country of striking limestone karsts, jade-green waters, and vibrant cultural heritage, where breathtaking natural landscapes harmonize with bustling cities and timeless traditions.";
                 break;
         }
 
-        narrativeTitle.text = title;
-        narrativeBody.text = body;
+        narrativeTitle.text = TranslateText(titleKey, language);
+        narrativeBody.text = TranslateText(bodyKey, language);
         narrativeTitle.ForceMeshUpdate();
         narrativeBody.ForceMeshUpdate();
     }
 
-    private static void GetAllText(Language language, out string title, out string body)
+    public string TranslateText(string key, Language language)
+    {
+        if (language == Language.English || string.IsNullOrEmpty(key)) return key;
+
+        // 1. Check dictionary (exact key)
+        if (dictionary.TryGetValue(key, out TranslationItem item))
+        {
+            string val = GetItemTranslation(item, language);
+            if (!string.IsNullOrEmpty(val)) return val;
+        }
+
+        // 2. Check dictionary (normalized key)
+        string normKey = NormalizeText(key);
+        if (dictionary.TryGetValue(normKey, out item))
+        {
+            string val = GetItemTranslation(item, language);
+            if (!string.IsNullOrEmpty(val)) return val;
+        }
+
+        // 3. Built-in C# Fallback dictionary (guarantees text translation even if JSON is not attached)
+        return GetBuiltInFallback(normKey, language, key);
+    }
+
+    private static string GetItemTranslation(TranslationItem item, Language language)
     {
         switch (language)
         {
-            case Language.TraditionalChinese:
-                title = "\u4E09\u5730\u4E00\u65C5\u7A0B";
-                body = "\u63A2\u7D22\u5580\u62C9\u62C9\u3001\u53F0\u7063\u8207\u8D8A\u5357\u4E4B\u9593\u7684\u6587\u5316\u9023\u7D50\uFF0C\u5C55\u958B\u4E00\u5834\u5171\u540C\u4EBA\u985E\u907A\u7522\u4E4B\u65C5\u3002";
-                break;
-            case Language.Malayalam:
-                title = "\u0D2E\u0D42\u0D28\u0D4D\u0D28\u0D4D \u0D28\u0D3E\u0D1F\u0D41\u0D15\u0D7E, \u0D12\u0D30\u0D41 \u0D2F\u0D3E\u0D24\u0D4D\u0D30";
-                body = "\u0D15\u0D47\u0D30\u0D33\u0D02, \u0D24\u0D3E\u0D2F\u0D4D\u200C\u0D35\u0D3E\u0D7B, \u0D35\u0D3F\u0D2F\u0D31\u0D4D\u0D31\u0D4D\u0D28\u0D3E\u0D02 \u0D0E\u0D28\u0D4D\u0D28\u0D3F\u0D35\u0D2F\u0D41\u0D1F\u0D46 \u0D38\u0D3E\u0D02\u0D38\u0D4D\u0D15\u0D3E\u0D30\u0D3F\u0D15 \u0D2C\u0D28\u0D4D\u0D27\u0D02 \u0D05\u0D28\u0D4D\u0D35\u0D47\u0D37\u0D3F\u0D15\u0D4D\u0D15\u0D41\u0D15.";
-                break;
-            case Language.Vietnamese:
-                title = "Ba v\u00F9ng \u0111\u1EA5t, m\u1ED9t h\u00E0nh tr\u00ECnh";
-                body = "Kh\u00E1m ph\u00E1 nh\u1EEFng s\u1EE3i d\u00E2y v\u0103n h\u00F3a n\u1ED1i li\u1EC1n Kerala, \u0110\u00E0i Loan v\u00E0 Vi\u1EC7t Nam.";
-                break;
-            default:
-                title = "Three Worlds, One Journey";
-                body = "Trace the subtle threads connecting the backwaters of Kerala, the resilient gorges of Taiwan, and the timeless waters of Vietnam.";
-                break;
+            case Language.TraditionalChinese: return item.zh;
+            case Language.Malayalam: return item.ml;
+            case Language.Vietnamese: return item.vi;
+            default: return item.en;
         }
     }
 
-    private static string GetCardTitle(string place, Language language)
+    private static string GetBuiltInFallback(string normKey, Language language, string originalKey)
     {
-        switch (place)
-        {
-            case "Kerala":
-                switch (language)
-                {
-                    case Language.TraditionalChinese: return "\u5580\u62C9\u62C9";
-                    case Language.Malayalam: return "\u0D15\u0D47\u0D30\u0D33\u0D02";
-                    case Language.Vietnamese: return "Kerala";
-                    default: return "Kerala";
-                }
-            case "Taiwan":
-                switch (language)
-                {
-                    case Language.TraditionalChinese: return "\u53F0\u7063";
-                    case Language.Malayalam: return "\u0D24\u0D3E\u0D2F\u0D4D\u200C\u0D35\u0D3E\u0D7B";
-                    case Language.Vietnamese: return "\u0110\u00E0i Loan";
-                    default: return "Taiwan";
-                }
-            case "Vietnam":
-                switch (language)
-                {
-                    case Language.TraditionalChinese: return "\u8D8A\u5357";
-                    case Language.Malayalam: return "\u0D35\u0D3F\u0D2F\u0D31\u0D4D\u0D31\u0D4D\u0D28\u0D3E\u0D02";
-                    case Language.Vietnamese: return "Vi\u1EC7t Nam";
-                    default: return "Vietnam";
-                }
-            default:
-                return place;
-        }
-    }
-
-    private static string TranslateText(string key, Language language)
-    {
-        if (language == Language.English)
-        {
-            return key;
-        }
-
-        switch (key)
+        switch (normKey)
         {
             case "Home":
-                return Pick(language, "\u9996\u9801", "\u0D39\u0D4B\u0D02", "Trang ch\u1EE7");
+                return Pick(language, "首頁", "ഹോം", "Trang chủ");
             case "Explore":
-                return Pick(language, "\u63A2\u7D22", "\u0D05\u0D28\u0D4D\u0D35\u0D47\u0D37\u0D3F\u0D15\u0D4D\u0D15\u0D41\u0D15", "Kh\u00E1m ph\u00E1");
+                return Pick(language, "探索", "അന്വേഷിക്കുക", "Khám phá");
             case "Passport":
-                return Pick(language, "\u8B77\u7167", "\u0D2A\u0D3E\u0D38\u0D4D\u0D2A\u0D4B\u0D7C\u0D1F\u0D4D", "H\u1ED9 chi\u1EBFu");
+                return Pick(language, "護照", "പാസ്പോർട്ട്", "Hộ chiếu");
             case "Ask AI":
-                return Pick(language, "\u8A62\u554F AI", "AI-\u0D2F\u0D4B\u0D1F\u0D4D \u0D1A\u0D4B\u0D26\u0D3F\u0D15\u0D4D\u0D15\u0D41\u0D15", "H\u1ECFi AI");
+                return Pick(language, "詢問 AI", "AI-യോട് ചോദിക്കുക", "Hỏi AI");
             case "CURRENT REGION":
-                return Pick(language, "\u7576\u524D\u5730\u5340", "\u0D28\u0D3F\u0D32\u0D35\u0D3F\u0D32\u0D46 \u0D2A\u0D4D\u0D30\u0D26\u0D47\u0D36\u0D02", "KHU V\u1EF0C HI\u1EC6N T\u1EA0I");
+                return Pick(language, "當前地區", "നിലവിലെ പ്രദേശം", "KHU VỰC HIỆN TẠI");
             case "Journey Progress":
-                return Pick(language, "\u65C5\u7A0B\u9032\u5EA6", "\u0D2F\u0D3E\u0D24\u0D4D\u0D30\u0D3E \u0D2A\u0D41\u0D30\u0D4B\u0D17\u0D24\u0D3F", "Ti\u1EBFn tr\u00ECnh h\u00E0nh tr\u00ECnh");
+                return Pick(language, "旅程進度", "യാത്രാ പുരോഗതി", "Tiến trình hành trình");
             case "Stamp Collection":
-                return Pick(language, "\u96C6\u7AE0\u6536\u85CF", "\u0D38\u0D4D\u0D31\u0D4D\u0D31\u0D3E\u0D2E\u0D4D\u0D2A\u0D4D \u0D36\u0D47\u0D16\u0D30\u0D02", "B\u1ED9 s\u01B0u t\u1EADp con d\u1EA5u");
+                return Pick(language, "集章收藏", "സ്റ്റാമ്പ് ശേഖരം", "Bộ sưu tập con dấu");
             case "Point camera at any pictures to discover.":
-                return Pick(language, "\u5C07\u76F8\u6A5F\u5C0D\u6E96\u4EFB\u4F55\u5716\u7247\u4F86\u767C\u73FE\u5167\u5BB9\u3002", "\u0D15\u0D23\u0D4D\u0D1F\u0D46\u0D24\u0D4D\u0D24\u0D3E\u0D7B \u0D15\u0D4D\u0D2F\u0D3E\u0D2E\u0D31 \u0D1A\u0D3F\u0D24\u0D4D\u0D30\u0D19\u0D4D\u0D19\u0D33\u0D3F\u0D32\u0D47\u0D15\u0D4D\u0D15\u0D4D \u0D1A\u0D42\u0D23\u0D4D\u0D1F\u0D41\u0D15.", "H\u01B0\u1EDBng camera v\u00E0o h\u00ECnh \u1EA3nh \u0111\u1EC3 kh\u00E1m ph\u00E1.");
-            case "Explore Kerela":
-            case "Explore Kerala":
-                return Pick(language, "\u63A2\u7D22\u5580\u62C9\u62C9", "\u0D15\u0D47\u0D30\u0D33\u0D02 \u0D05\u0D28\u0D4D\u0D35\u0D47\u0D37\u0D3F\u0D15\u0D4D\u0D15\u0D41\u0D15", "Kh\u00E1m ph\u00E1 Kerala");
-            case "Explore Taiwan":
-                return Pick(language, "\u63A2\u7D22\u53F0\u7063", "\u0D24\u0D3E\u0D2F\u0D4D\u200C\u0D35\u0D3E\u0D7B \u0D05\u0D28\u0D4D\u0D35\u0D47\u0D37\u0D3F\u0D15\u0D4D\u0D15\u0D41\u0D15", "Kh\u00E1m ph\u00E1 \u0110\u00E0i Loan");
-            case "Explore Vietnam":
-                return Pick(language, "\u63A2\u7D22\u8D8A\u5357", "\u0D35\u0D3F\u0D2F\u0D31\u0D4D\u0D31\u0D4D\u0D28\u0D3E\u0D02 \u0D05\u0D28\u0D4D\u0D35\u0D47\u0D37\u0D3F\u0D15\u0D4D\u0D15\u0D41\u0D15", "Kh\u00E1m ph\u00E1 Vi\u1EC7t Nam");
+                return Pick(language, "將相機對準任何圖片來發現內容。", "കണ്ടെത്താൻ ക്യാമറ ചിത്രങ്ങളിലേക്ക് ചൂണ്ടുക.", "Hướng camera vào hình ảnh để khám phá.");
+            
             case "Kerala":
-                return Pick(language, "\u5580\u62C9\u62C9", "\u0D15\u0D47\u0D30\u0D33\u0D02", "Kerala");
+                return Pick(language, "喀拉拉邦", "കേരളം", "Kerala");
             case "Taiwan":
-                return Pick(language, "\u53F0\u7063", "\u0D24\u0D3E\u0D2F\u0D4D\u200C\u0D35\u0D3E\u0D7B", "\u0110\u00E0i Loan");
+                return Pick(language, "台灣", "തായ്‌വാൻ", "Đài Loan");
             case "Vietnam":
-                return Pick(language, "\u8D8A\u5357", "\u0D35\u0D3F\u0D2F\u0D31\u0D4D\u0D31\u0D4D\u0D28\u0D3E\u0D02", "Vi\u1EC7t Nam");
-            case "Taiwan Lantern Festival":
-                return Pick(language, "\u53F0\u7063\u71C8\u6703", "\u0D24\u0D3E\u0D2F\u0D4D\u200C\u0D35\u0D3E\u0D7B \u0D32\u0D3E\u0D28\u0D4D\u0D31\u0D47\u0D7A \u0D09\u0D24\u0D4D\u0D38\u0D35\u0D02", "L\u1EC5 h\u1ED9i \u0111\u00E8n l\u1ED3ng \u0110\u00E0i Loan");
-            case "Taiwan Indigenous Traditional Clothing":
-                return Pick(language, "\u53F0\u7063\u539F\u4F4F\u6C11\u50B3\u7D71\u670D\u98FE", "\u0D24\u0D3E\u0D2F\u0D4D\u200C\u0D35\u0D3E\u0D7B \u0D06\u0D26\u0D3F\u0D35\u0D3E\u0D38\u0D3F \u0D35\u0D38\u0D4D\u0D24\u0D4D\u0D30\u0D02", "Trang ph\u1EE5c truy\u1EC1n th\u1ED1ng b\u1EA3n \u0111\u1ECBa \u0110\u00E0i Loan");
-            case "Dong Ky Festival":
-                return Pick(language, "\u6771\u5947\u7BC0", "\u0D21\u0D4B\u0D19\u0D4D \u0D15\u0D3F \u0D09\u0D24\u0D4D\u0D38\u0D35\u0D02", "L\u1EC5 h\u1ED9i \u0110\u1ED3ng K\u1EF5");
-            case "Phu The Cake":
-                return Pick(language, "\u592B\u59BB\u9905", "\u0D2B\u0D41 \u0D25\u0D47 \u0D15\u0D47\u0D15\u0D4D\u0D15\u0D4D", "B\u00E1nh phu th\u00EA");
-            case "Vietnamese Four-part Dress":
-                return Pick(language, "\u8D8A\u5357\u56DB\u8EAB\u8863", "\u0D35\u0D3F\u0D2F\u0D31\u0D4D\u0D31\u0D4D\u0D28\u0D3E\u0D2E\u0D40\u0D38\u0D4D \u0D28\u0D3E\u0D32\u0D4D \u0D2D\u0D3E\u0D17 \u0D35\u0D38\u0D4D\u0D24\u0D4D\u0D30\u0D02", "\u00C1o t\u1EE9 th\u00E2n");
-            case "Beef Noodle":
-                return Pick(language, "\u725B\u8089\u9EB5", "\u0D2C\u0D40\u0D2B\u0D4D \u0D28\u0D42\u0D21\u0D3F\u0D7D", "M\u00EC b\u00F2");
-            case "Option A":
-                return Pick(language, "\u9078\u9805 A", "\u0D13\u0D2A\u0D4D\u0D37\u0D7B A", "T\u00F9y ch\u1ECDn A");
-            case "66%":
-                return "66%";
-            default:
-                return TranslateLongText(key, language);
-        }
-    }
-
-    private static string TranslateLocationOption(string key, Language language)
-    {
-        if (language == Language.English)
-        {
-            return key;
-        }
-
-        switch (key)
-        {
+                return Pick(language, "越南", "വിയറ്റ്നാം", "Việt Nam");
             case "All":
-                return Pick(language, "\u5168\u90E8", "\u0D0E\u0D32\u0D4D\u0D32\u0D3E\u0D02", "T\u1EA5t c\u1EA3");
-            case "Taiwan":
-                return Pick(language, "\u53F0\u7063", "\u0D24\u0D3E\u0D2F\u0D4D\u200C\u0D35\u0D3E\u0D7B", "\u0110\u00E0i Loan");
+                return Pick(language, "全部", "എല്ലാം", "Tất cả");
             case "India (Kerala)":
-                return Pick(language, "\u5370\u5EA6\uFF08\u5580\u62C9\u62C9\uFF09", "\u0D07\u0D28\u0D4D\u0D24\u0D4D\u0D2F (\u0D15\u0D47\u0D30\u0D33\u0D02)", "\u1EA4n \u0110\u1ED9 (Kerala)");
+                return Pick(language, "印度（喀拉拉邦）", "ഇന്ത്യ (കേരളം)", "Ấn Độ (Kerala)");
             case "Vietnam (Bac Ninh)":
-                return Pick(language, "\u8D8A\u5357\uFF08\u5317\u5BE7\uFF09", "\u0D35\u0D3F\u0D2F\u0D31\u0D4D\u0D31\u0D4D\u0D28\u0D3E\u0D02 (\u0D2C\u0D3E\u0D15\u0D4D \u0D28\u0D3F\u0D28\u0D4D\u0D39\u0D4D)", "Vi\u1EC7t Nam (B\u1EAFc Ninh)");
+                return Pick(language, "越南（北寧）", "വിയറ്റ്നാം (ബാക് നിൻഹ്)", "Việt Nam (Bắc Ninh)");
+
+            case "Explore Kerala":
+            case "Explore Kerela":
+                return Pick(language, "探索喀拉拉", "കേരളം അന്വേഷിക്കുക", "Khám phá Kerala");
+            case "Explore Taiwan":
+                return Pick(language, "探索台灣", "തായ്‌വാൻ അന്വേഷിക്കുക", "Khám phá Đài Loan");
+            case "Explore Vietnam":
+                return Pick(language, "探索越南", "വിയറ്റ്നാം അന്വേഷിക്കുക", "Khám phá Việt Nam");
+
+            case "Taiwan Lantern Festival":
+                return Pick(language, "台灣燈會", "തായ്‌വാൻ ലാൻ്റേൺ ഉത്സവം", "Lễ hội đèn lồng Đài Loan");
+            case "Taiwan Indigenous Traditional Clothing":
+                return Pick(language, "台灣原住民傳統服飾", "തായ്‌വാൻ ആദിവാസി വസ്ത്രം", "Trang phục truyền thống bản địa Đài Loan");
+            case "Dong Ky Festival":
+                return Pick(language, "東奇節", "ഡോങ് കി ഉത്സവം", "Lễ hội Đồng Kỵ");
+            case "Phu The Cake":
+                return Pick(language, "夫妻餅", "ഫു തേ കേക്ക്", "Bánh phu thê");
+            case "Vietnamese Four-part Dress":
+                return Pick(language, "越南四身衣", "വിയറ്റ്നാമീസ് നാൽ ഭാഗ വസ്ത്രം", "Áo tứ thân");
+            case "Beef Noodle":
+                return Pick(language, "牛肉麵", "ബീഫ് നൂഡിൽ", "Mì bò");
+
+            case "Three Worlds, One Journey":
+                return Pick(language, "三個世界，一段旅程", "മൂന്ന് ലോകങ്ങൾ, ഒരു യാത്ര", "Ba Thế Giới, Một Hành Trình");
+            case "Taiwan: Living Traditions":
+                return Pick(language, "台灣：活著的傳統", "തായ്‌വാൻ: ജീവിക്കുന്ന പാരമ്പര്യങ്ങൾ", "Đài Loan: Truyền Thống Sống Động");
+            case "Kerala: God's Own Country":
+            case "Kerala: God’s Own Country":
+                return Pick(language, "喀拉拉邦：上帝的國度", "കേരളം: ദൈവത്തിന്റെ സ്വന്തം നാട്", "Kerala: Vùng Đất Của Thượng Đế");
+            case "Vietnam: Ascending Dragon":
+                return Pick(language, "越南：昇龍之地", "വിയറ്റ്നാം: ഉയരുന്ന ഡ്രാഗൺ", "Việt Nam: Rồng Bay Lên");
+
             default:
-                return key;
+                if (normKey.StartsWith("Your exploration of the archival collections is well underway"))
+                {
+                    return Pick(language,
+                        "你的檔案探索已經開始。繼續完成旅程來收集所有印記。",
+                        "ആർക്കൈവ് ശേഖരങ്ങളിലെ നിങ്ങളുടെ യാത്ര തുടങ്ങി. സ്റ്റാമ്പുകൾ ശേഖരിക്കാൻ യാത്ര പൂർത്തിയാക്കുക.",
+                        "Hành trình khám phá tư liệu đang tiến triển. Hoàn thành để sưu tập đủ con dấu.");
+                }
+                if (normKey.StartsWith("A savory symbol of tradition and flavor"))
+                {
+                    return Pick(language,
+                        "傳統與風味的咸香象徵。",
+                        "രുചിയും പാരമ്പര്യവും ചേർന്ന ചിഹ്നം.",
+                        "Biểu tượng đậm đà của truyền thống và hương vị.");
+                }
+                if (normKey.StartsWith("Glowing lights and cultural traditions"))
+                {
+                    return Pick(language,
+                        "燈火與傳統文化照亮夜晚。",
+                        "തിളങ്ങുന്ന വെളിച്ചവും സംസ്കാരവും രാത്രിയെ തെളിയിക്കുന്നു.",
+                        "Ánh đèn và truyền thống văn hóa thắp sáng màn đêm.");
+                }
+                if (normKey.StartsWith("A vibrant expression of heritage"))
+                {
+                    return Pick(language,
+                        "色彩、珠飾與紋樣編織出鮮活的文化傳承。",
+                        "നിറങ്ങളും മണികളും പാറ്റേണുകളും ചേർന്ന പൈതൃക അവതരണം.",
+                        "Màu sắc, hạt cườm và hoa văn dệt nên di sản sống động.");
+                }
+                if (normKey.StartsWith("A sweet Vietnamese wedding cake"))
+                {
+                    return Pick(language,
+                        "象徵愛與忠誠的越南喜餅。",
+                        "സ്നേഹവും വിശ്വസ്തതയും സൂചിപ്പിക്കുന്ന വിയറ്റ്നാമീസ് വിവാഹ കേക്ക്.",
+                        "Món bánh cưới Việt Nam tượng trưng cho tình yêu và thủy chung.");
+                }
+                if (normKey.StartsWith("A graceful four-panel dress"))
+                {
+                    return Pick(language,
+                        "優雅的四片式長衫，展現越南傳統。",
+                        "വിയറ്റ്നാമീസ് പാരമ്പര്യം കാണിക്കുന്ന നാല് ഭാഗ വസ്ത്രം.",
+                        "Chiếc áo tứ thân duyên dáng, thể hiện truyền thống Việt Nam.");
+                }
+                if (normKey.StartsWith("A grand procession honoring the village"))
+                {
+                    return Pick(language,
+                        "盛大遊行以鼓樂、祭儀與社群記憶禮敬村莊守護神。",
+                        "ചെണ്ടമേളവും ആചാരവും സമൂഹ ഓർമയും ചേർന്ന വലിയ ഊർവലം.",
+                        "Một đoàn rước lớn tôn vinh thành hoàng với trống, nghi lễ và ký ức cộng đồng.");
+                }
+                if (normKey.StartsWith("Kerala, God") || normKey.StartsWith("Kerala,"))
+                {
+                    return Pick(language, 
+                        "喀拉拉邦，上帝的國度，是一片擁有寧靜迴水、翠綠茶園和古老寺廟的土地，這裡的自然美景與充滿活力的傳統完美交融。",
+                        "ദൈവത്തിന്റെ സ്വന്തം നാടായ കേരളം, ശാന്തമായ കായലുകളും സമൃദ്ധമായ തേയിലത്തോട്ടങ്ങളും പുരാതന ക്ഷേത്രങ്ങളുമുള്ള ഒരു നാടാണ്, ഇവിടെ പ്രകൃതിസൗന്ദര്യവും സജീവമായ പാരമ്പര്യങ്ങളും തടസ്സങ്ങളില്ലാതെ ലയിക്കുന്നു.",
+                        "Kerala, Vùng Đất Của Thượng Đế, là xứ sở của những vùng sông nước thanh bình, những đồi chè xanh mướt và các ngôi đền cổ kính, nơi vẻ đẹp thiên nhiên và truyền thống rực rỡ hòa quyện liền mạch.");
+                }
+                if (normKey.StartsWith("Taiwan, Ilha Formosa") || normKey.StartsWith("Taiwan,"))
+                {
+                    return Pick(language, 
+                        "台灣，福爾摩沙，這片土地擁有壯麗的峽谷、熙熙攘攘的夜市和深厚的文化傳統，令人驚嘆的自然景觀與充滿活力的都市生活在此交會。",
+                        "മനോഹരമായ ദ്വീപായ തായ്‌വാൻ, അതിശയകരമായ മലയിടുക്കുകളുടെയും തിരക്കേറിയ രാത്രി വിപണികളുടെയും നാടാണ്.",
+                        "Đài Loan, hòn đảo Formosa xinh đẹp, là vùng đất của những hẻm núi hùng vĩ, những khu chợ đêm sầm uất và truyền thống văn hóa lâu đời, nơi cảnh quan thiên nhiên ngoạn mục giao thoa cùng nhịp sống đô thị sôi động.");
+                }
+                if (normKey.StartsWith("Vietnam is a country") || normKey.StartsWith("Vietnam is"))
+                {
+                    return Pick(language, 
+                        "越南是一個擁有引人注目的石灰岩喀斯特地貌、翠綠水域和充滿活力的文化遺產的國家，令人驚嘆的自然景觀與繁華的城市和永恆的傳統在此和諧共存。",
+                        "ശ്രദ്ധേയമായ ചുണ്ണാമ്പുകല്ല് പർവതങ്ങളുടെയും മരതകപ്പച്ച വെള്ളത്തിന്റെയും രാജ്യമാണ് വിയറ്റ്നാം.",
+                        "Việt Nam là quốc gia của những dãy núi đá vôi nổi bật, làn nước xanh ngọc bích và di sản văn hóa rực rỡ, nơi cảnh quan thiên nhiên ngoạn mục hài hòa với những thành phố nhộn nhịp và truyền thống vượt thời gian.");
+                }
+                if (normKey.StartsWith("Trace the subtle threads"))
+                {
+                    return Pick(language,
+                        "探索喀拉拉邦的迴水、台灣的堅韌峽谷與越南的永恆水域之間的微妙聯繫。一場對人類共同遺產的精心探索。",
+                        "കേരളത്തിലെ കായലുകളും തായ്‌വാനിലെ മലയിടുക്കുകളും വിയറ്റ്നാമിലെ ജലാശയങ്ങളും തമ്മിലുള്ള ബന്ധം കണ്ടെത്തുക.",
+                        "Khám phá sự giao thoa văn hóa giữa Kerala, Đài Loan và Việt Nam. Một hành trình lưu giữ di sản nhân loại.");
+                }
+                return originalKey;
         }
-    }
-
-    private static string TranslateLongText(string key, Language language)
-    {
-        if (key.StartsWith("Your exploration of the archival collections is well underway."))
-        {
-            return Pick(language, "\u4F60\u7684\u6A94\u6848\u63A2\u7D22\u5DF2\u7D93\u958B\u59CB\u3002\u7E7C\u7E8C\u5B8C\u6210\u65C5\u7A0B\u4F86\u6536\u96C6\u6240\u6709\u5370\u8A18\u3002", "\u0D06\u0D7C\u0D15\u0D4D\u0D15\u0D48\u0D35\u0D4D \u0D36\u0D47\u0D16\u0D30\u0D19\u0D4D\u0D19\u0D33\u0D3F\u0D32\u0D46 \u0D28\u0D3F\u0D19\u0D4D\u0D19\u0D33\u0D41\u0D1F\u0D46 \u0D2F\u0D3E\u0D24\u0D4D\u0D30 \u0D24\u0D41\u0D1F\u0D19\u0D4D\u0D19\u0D3F. \u0D38\u0D4D\u0D31\u0D4D\u0D31\u0D3E\u0D2E\u0D4D\u0D2A\u0D41\u0D15\u0D7E \u0D36\u0D47\u0D16\u0D30\u0D3F\u0D15\u0D4D\u0D15\u0D3E\u0D7B \u0D2F\u0D3E\u0D24\u0D4D\u0D30 \u0D2A\u0D42\u0D7C\u0D24\u0D4D\u0D24\u0D3F\u0D2F\u0D3E\u0D15\u0D4D\u0D15\u0D41\u0D15.", "H\u00E0nh tr\u00ECnh kh\u00E1m ph\u00E1 t\u01B0 li\u1EC7u \u0111ang ti\u1EBFn tri\u1EC3n. Ho\u00E0n th\u00E0nh \u0111\u1EC3 s\u01B0u t\u1EADp \u0111\u1EE7 con d\u1EA5u.");
-        }
-
-        if (key.StartsWith("A vibrant expression of heritage"))
-        {
-            return Pick(language, "\u8272\u5F69\u3001\u73E0\u98FE\u8207\u7D0B\u6A23\u7DE8\u7E54\u51FA\u9BAE\u6D3B\u7684\u6587\u5316\u50B3\u627F\u3002", "\u0D28\u0D3F\u0D31\u0D19\u0D4D\u0D19\u0D33\u0D41\u0D02 \u0D2E\u0D23\u0D3F\u0D15\u0D33\u0D41\u0D02 \u0D2A\u0D3E\u0D31\u0D4D\u0D31\u0D47\u0D23\u0D41\u0D15\u0D33\u0D41\u0D02 \u0D1A\u0D47\u0D7C\u0D28\u0D4D\u0D28 \u0D2A\u0D48\u0D24\u0D43\u0D15 \u0D05\u0D35\u0D24\u0D30\u0D23\u0D02.", "M\u00E0u s\u1EAFc, h\u1EA1t c\u01B0\u1EDDm v\u00E0 hoa v\u0103n d\u1EC7t n\u00EAn di s\u1EA3n s\u1ED1ng \u0111\u1ED9ng.");
-        }
-
-        if (key.StartsWith("Glowing lights and cultural traditions"))
-        {
-            return Pick(language, "\u71C8\u706B\u8207\u50B3\u7D71\u6587\u5316\u7167\u4EAE\u591C\u665A\u3002", "\u0D24\u0D3F\u0D33\u0D19\u0D4D\u0D19\u0D41\u0D28\u0D4D\u0D28 \u0D35\u0D46\u0D33\u0D3F\u0D1A\u0D4D\u0D1A\u0D35\u0D41\u0D02 \u0D38\u0D02\u0D38\u0D4D\u0D15\u0D3E\u0D30\u0D35\u0D41\u0D02 \u0D30\u0D3E\u0D24\u0D4D\u0D30\u0D3F\u0D2F\u0D46 \u0D24\u0D46\u0D33\u0D3F\u0D2F\u0D3F\u0D15\u0D4D\u0D15\u0D41\u0D28\u0D4D\u0D28\u0D41.", "\u00C1nh \u0111\u00E8n v\u00E0 truy\u1EC1n th\u1ED1ng v\u0103n h\u00F3a th\u1EAFp s\u00E1ng m\u00E0n \u0111\u00EAm.");
-        }
-
-        if (key.StartsWith("A sweet Vietnamese wedding cake"))
-        {
-            return Pick(language, "\u8C61\u5FB5\u611B\u8207\u5FE0\u8AA0\u7684\u8D8A\u5357\u559C\u9905\u3002", "\u0D38\u0D4D\u0D28\u0D47\u0D39\u0D35\u0D41\u0D02 \u0D35\u0D3F\u0D36\u0D4D\u0D35\u0D38\u0D4D\u0D24\u0D24\u0D2F\u0D41\u0D02 \u0D38\u0D42\u0D1A\u0D3F\u0D2A\u0D4D\u0D2A\u0D3F\u0D15\u0D4D\u0D15\u0D41\u0D28\u0D4D\u0D28 \u0D35\u0D3F\u0D2F\u0D31\u0D4D\u0D31\u0D4D\u0D28\u0D3E\u0D2E\u0D40\u0D38\u0D4D \u0D35\u0D3F\u0D35\u0D3E\u0D39 \u0D15\u0D47\u0D15\u0D4D\u0D15\u0D4D.", "M\u00F3n b\u00E1nh c\u01B0\u1EDBi Vi\u1EC7t Nam t\u01B0\u1EE3ng tr\u01B0ng cho t\u00ECnh y\u00EAu v\u00E0 th\u1EE7y chung.");
-        }
-
-        if (key.StartsWith("A graceful four-panel dress"))
-        {
-            return Pick(language, "\u512A\u96C5\u7684\u56DB\u7247\u5F0F\u9577\u886B\uFF0C\u5C55\u73FE\u8D8A\u5357\u50B3\u7D71\u3002", "\u0D35\u0D3F\u0D2F\u0D31\u0D4D\u0D31\u0D4D\u0D28\u0D3E\u0D2E\u0D40\u0D38\u0D4D \u0D2A\u0D3E\u0D30\u0D2E\u0D4D\u0D2A\u0D30\u0D4D\u0D2F\u0D02 \u0D15\u0D3E\u0D23\u0D3F\u0D15\u0D4D\u0D15\u0D41\u0D28\u0D4D\u0D28 \u0D28\u0D3E\u0D32\u0D4D \u0D2D\u0D3E\u0D17 \u0D35\u0D38\u0D4D\u0D24\u0D4D\u0D30\u0D02.", "Chi\u1EBFc \u00E1o t\u1EE9 th\u00E2n duy\u00EAn d\u00E1ng, th\u1EC3 hi\u1EC7n truy\u1EC1n th\u1ED1ng Vi\u1EC7t Nam.");
-        }
-
-        if (key.StartsWith("A savory symbol of tradition and flavor."))
-        {
-            return Pick(language, "\u50B3\u7D71\u8207\u98A8\u5473\u7684\u9E79\u9999\u8C61\u5FB5\u3002", "\u0D30\u0D41\u0D1A\u0D3F\u0D2F\u0D41\u0D02 \u0D2A\u0D3E\u0D30\u0D2E\u0D4D\u0D2A\u0D30\u0D4D\u0D2F\u0D35\u0D41\u0D02 \u0D1A\u0D47\u0D7C\u0D28\u0D4D\u0D28 \u0D1A\u0D3F\u0D39\u0D4D\u0D28\u0D02.", "Bi\u1EC3u t\u01B0\u1EE3ng \u0111\u1EADm \u0111\u00E0 c\u1EE7a truy\u1EC1n th\u1ED1ng v\u00E0 h\u01B0\u01A1ng v\u1ECB.");
-        }
-
-        if (key.StartsWith("A grand procession honoring the village"))
-        {
-            return Pick(language, "\u76DB\u5927\u904A\u884C\u4EE5\u9F13\u6A02\u3001\u796D\u5100\u8207\u793E\u7FA4\u8A18\u61B6\u79AE\u656C\u6751\u838A\u5B88\u8B77\u795E\u3002", "\u0D1A\u0D46\u0D23\u0D4D\u0D1F\u0D2E\u0D47\u0D33\u0D35\u0D41\u0D02 \u0D06\u0D1A\u0D3E\u0D30\u0D35\u0D41\u0D02 \u0D38\u0D2E\u0D42\u0D39 \u0D13\u0D7C\u0D2E\u0D2F\u0D41\u0D02 \u0D1A\u0D47\u0D7C\u0D28\u0D4D\u0D28 \u0D17\u0D4D\u0D30\u0D3E\u0D2E\u0D26\u0D47\u0D35\u0D24\u0D2F\u0D4D\u0D15\u0D4D\u0D15\u0D41\u0D33\u0D4D\u0D33 \u0D35\u0D32\u0D3F\u0D2F \u0D0A\u0D30\u0D4D\u0D35\u0D32\u0D02.", "M\u1ED9t \u0111o\u00E0n r\u01B0\u1EDBc l\u1EDBn t\u00F4n vinh th\u00E0nh ho\u00E0ng v\u1EDBi tr\u1ED1ng, nghi l\u1EC5 v\u00E0 k\u00FD \u1EE9c c\u1ED9ng \u0111\u1ED3ng.");
-        }
-
-        return key;
     }
 
     private static string Pick(Language language, string traditionalChinese, string malayalam, string vietnamese)
@@ -629,108 +664,6 @@ public class AppController : MonoBehaviour
                 return vietnamese;
             default:
                 return string.Empty;
-        }
-    }
-
-    private static string GetCardDescription(string place, Language language)
-    {
-        switch (place)
-        {
-            case "Kerala":
-                switch (language)
-                {
-                    case Language.TraditionalChinese: return "\u4E0A\u5E1D\u7684\u570B\u5EA6\u3002\u5BE7\u975C\u6C34\u9109\u8207\u53E4\u8001\u50B3\u7D71\u3002";
-                    case Language.Malayalam: return "\u0D26\u0D48\u0D35\u0D24\u0D4D\u0D24\u0D3F\u0D28\u0D4D\u0D31\u0D46 \u0D28\u0D3E\u0D1F\u0D4D. \u0D36\u0D3E\u0D28\u0D4D\u0D24 \u0D15\u0D3E\u0D2F\u0D32\u0D41\u0D15\u0D33\u0D41\u0D02 \u0D2A\u0D3E\u0D30\u0D2E\u0D4D\u0D2A\u0D30\u0D4D\u0D2F\u0D35\u0D41\u0D02.";
-                    case Language.Vietnamese: return "V\u00F9ng \u0111\u1EA5t c\u1EE7a th\u1EA7n linh, v\u1EDBi s\u00F4ng n\u01B0\u1EDBc y\u00EAn b\u00ECnh.";
-                    default: return "God's Own Country. A serene network of backwaters and ancient traditions.";
-                }
-            case "Taiwan":
-                switch (language)
-                {
-                    case Language.TraditionalChinese: return "\u798F\u723E\u6469\u6C99\u3002\u5C71\u8C37\u3001\u591C\u5E02\u8207\u6DF1\u539A\u6587\u5316\u3002";
-                    case Language.Malayalam: return "\u0D2B\u0D4B\u0D7C\u0D2E\u0D4B\u0D38. \u0D2E\u0D32\u0D2F\u0D3F\u0D1F\u0D41\u0D15\u0D4D\u0D15\u0D41\u0D15\u0D33\u0D41\u0D02 \u0D28\u0D48\u0D31\u0D4D\u0D31\u0D4D \u0D2E\u0D3E\u0D7C\u0D15\u0D4D\u0D15\u0D31\u0D4D\u0D31\u0D41\u0D15\u0D33\u0D41\u0D02.";
-                    case Language.Vietnamese: return "\u0110\u1EA3o Formosa, v\u1EDBi h\u1EBBm n\u00FAi, ch\u1EE3 \u0111\u00EAm v\u00E0 v\u0103n h\u00F3a.";
-                    default: return "Ilha Formosa. A land of dramatic gorges, night markets, and deep culture.";
-                }
-            case "Vietnam":
-                switch (language)
-                {
-                    case Language.TraditionalChinese: return "\u9A30\u98DB\u4E4B\u9F8D\u3002\u77F3\u7070\u5CA9\u5C71\u5F9E\u7FE0\u7DA0\u6C34\u57DF\u5347\u8D77\u3002";
-                    case Language.Malayalam: return "\u0D09\u0D2F\u0D30\u0D41\u0D28\u0D4D\u0D28 \u0D28\u0D3E\u0D17\u0D02. \u0D1A\u0D41\u0D23\u0D4D\u0D23\u0D3E\u0D2E\u0D4D\u0D2A\u0D41\u0D15\u0D32\u0D4D\u0D32\u0D4D \u0D2E\u0D32\u0D15\u0D7E.";
-                    case Language.Vietnamese: return "R\u1ED3ng bay l\u00EAn. N\u00FAi \u0111\u00E1 v\u00F4i v\u01B0\u01A1n t\u1EEB l\u00E0n n\u01B0\u1EDBc xanh.";
-                    default: return "Ascending Dragon. Limestone karsts rising from jade waters.";
-                }
-            default:
-                return string.Empty;
-        }
-    }
-
-    private static void GetTaiwanText(Language language, out string title, out string body)
-    {
-        switch (language)
-        {
-            case Language.TraditionalChinese:
-                title = "\u53F0\u7063\uFF1A\u9BAE\u6D3B\u50B3\u7D71";
-                body = "\u63A2\u7D22\u90FD\u5E02\u4E2D\u7684\u5EDF\u5B87\u8207\u5C71\u8C37\uFF0C\u611F\u53D7\u9748\u6027\u6B77\u53F2\u8207\u73FE\u4EE3\u751F\u6D3B\u7684\u7D50\u5408\u3002";
-                break;
-            case Language.Malayalam:
-                title = "\u0D24\u0D3E\u0D2F\u0D4D\u200C\u0D35\u0D3E\u0D7B: \u0D1C\u0D40\u0D35\u0D3F\u0D15\u0D4D\u0D15\u0D41\u0D28\u0D4D\u0D28 \u0D2A\u0D3E\u0D30\u0D2E\u0D4D\u0D2A\u0D30\u0D4D\u0D2F\u0D19\u0D4D\u0D19\u0D7E";
-                body = "\u0D28\u0D17\u0D30\u0D19\u0D4D\u0D19\u0D33\u0D41\u0D02 \u0D15\u0D4D\u0D37\u0D47\u0D24\u0D4D\u0D30\u0D19\u0D4D\u0D19\u0D33\u0D41\u0D02 \u0D1A\u0D47\u0D30\u0D41\u0D28\u0D4D\u0D28 \u0D24\u0D3E\u0D2F\u0D4D\u200C\u0D35\u0D3E\u0D28\u0D3F\u0D32\u0D46 \u0D2A\u0D3E\u0D30\u0D2E\u0D4D\u0D2A\u0D30\u0D4D\u0D2F\u0D02 \u0D15\u0D23\u0D4D\u0D1F\u0D46\u0D24\u0D4D\u0D24\u0D41\u0D15.";
-                break;
-            case Language.Vietnamese:
-                title = "\u0110\u00E0i Loan: truy\u1EC1n th\u1ED1ng s\u1ED1ng \u0111\u1ED9ng";
-                body = "Kh\u00E1m ph\u00E1 nh\u1EEFng ng\u00F4i \u0111\u1EC1n v\u00E0 h\u1EBBm n\u00FAi, n\u01A1i l\u1ECBch s\u1EED t\u00E2m linh h\u00F2a c\u00F9ng \u0111\u00F4 th\u1ECB hi\u1EC7n \u0111\u1EA1i.";
-                break;
-            default:
-                title = "Taiwan: Living Traditions";
-                body = "Discover temples nestled between skyscrapers, a testament to the blend of spiritual history and rapid urban development.";
-                break;
-        }
-    }
-
-    private static void GetKeralaText(Language language, out string title, out string body)
-    {
-        switch (language)
-        {
-            case Language.TraditionalChinese:
-                title = "\u5580\u62C9\u62C9\uFF1A\u4E0A\u5E1D\u7684\u570B\u5EA6";
-                body = "\u63A2\u7D22\u5BE7\u975C\u7684\u6C34\u9109\u8207\u9BAE\u660E\u50B3\u7D71\uFF0C\u611F\u53D7\u5370\u5EA6\u5357\u90E8\u7684\u6587\u5316\u98A8\u666F\u3002";
-                break;
-            case Language.Malayalam:
-                title = "\u0D15\u0D47\u0D30\u0D33\u0D02: \u0D26\u0D48\u0D35\u0D24\u0D4D\u0D24\u0D3F\u0D28\u0D4D\u0D31\u0D46 \u0D38\u0D4D\u0D35\u0D28\u0D4D\u0D24\u0D02 \u0D28\u0D3E\u0D1F\u0D4D";
-                body = "\u0D36\u0D3E\u0D28\u0D4D\u0D24\u0D2E\u0D3E\u0D2F \u0D15\u0D3E\u0D2F\u0D32\u0D41\u0D15\u0D33\u0D41\u0D02 \u0D28\u0D3F\u0D31\u0D1E\u0D4D\u0D1E \u0D2A\u0D3E\u0D30\u0D2E\u0D4D\u0D2A\u0D30\u0D4D\u0D2F\u0D19\u0D4D\u0D19\u0D33\u0D41\u0D02 \u0D15\u0D47\u0D30\u0D33\u0D24\u0D4D\u0D24\u0D3F\u0D28\u0D4D\u0D31\u0D46 \u0D38\u0D02\u0D38\u0D4D\u0D15\u0D3E\u0D30\u0D02 \u0D15\u0D3E\u0D23\u0D3F\u0D15\u0D4D\u0D15\u0D41\u0D28\u0D4D\u0D28\u0D41.";
-                break;
-            case Language.Vietnamese:
-                title = "Kerala: v\u00F9ng \u0111\u1EA5t c\u1EE7a th\u1EA7n linh";
-                body = "Kh\u00E1m ph\u00E1 v\u00F9ng s\u00F4ng n\u01B0\u1EDBc y\u00EAn b\u00ECnh v\u00E0 nh\u1EEFng truy\u1EC1n th\u1ED1ng r\u1EF1c r\u1EE1 c\u1EE7a mi\u1EC1n nam \u1EA4n \u0110\u1ED9.";
-                break;
-            default:
-                title = "Kerala: God's Own Country";
-                body = "Explore the serene network of backwaters and vibrant traditions that shaped southern India.";
-                break;
-        }
-    }
-
-    private static void GetVietnamText(Language language, out string title, out string body)
-    {
-        switch (language)
-        {
-            case Language.TraditionalChinese:
-                title = "\u8D8A\u5357\uFF1A\u9A30\u98DB\u4E4B\u9F8D";
-                body = "\u7A7F\u884C\u65BC\u58EF\u9E97\u7684\u77F3\u7070\u5CA9\u5C71\u8207\u6C11\u9593\u85DD\u8853\u4E4B\u9593\uFF0C\u611F\u53D7\u5C0D\u5B89\u7A69\u751F\u6D3B\u7684\u9858\u671B\u3002";
-                break;
-            case Language.Malayalam:
-                title = "\u0D35\u0D3F\u0D2F\u0D31\u0D4D\u0D31\u0D4D\u0D28\u0D3E\u0D02: \u0D09\u0D2F\u0D30\u0D41\u0D28\u0D4D\u0D28 \u0D28\u0D3E\u0D17\u0D02";
-                body = "\u0D1A\u0D41\u0D23\u0D4D\u0D23\u0D3E\u0D2E\u0D4D\u0D2A\u0D41\u0D15\u0D32\u0D4D\u0D32\u0D4D \u0D2E\u0D32\u0D15\u0D33\u0D41\u0D02 \u0D1C\u0D28\u0D15\u0D32\u0D2F\u0D41\u0D02 \u0D35\u0D3F\u0D2F\u0D31\u0D4D\u0D31\u0D4D\u0D28\u0D3E\u0D2E\u0D3F\u0D28\u0D4D\u0D31\u0D46 \u0D38\u0D2E\u0D3E\u0D27\u0D3E\u0D28 \u0D38\u0D4D\u0D35\u0D2A\u0D4D\u0D28\u0D02 \u0D15\u0D3E\u0D23\u0D3F\u0D15\u0D4D\u0D15\u0D41\u0D28\u0D4D\u0D28\u0D41.";
-                break;
-            case Language.Vietnamese:
-                title = "Vi\u1EC7t Nam: r\u1ED3ng bay l\u00EAn";
-                body = "\u0110i qua n\u00FAi \u0111\u00E1 v\u00F4i h\u00F9ng v\u0129 v\u00E0 ngh\u1EC7 thu\u1EADt d\u00E2n gian, n\u01A1i ph\u1EA3n chi\u1EBFu kh\u00E1t v\u1ECDng v\u1EC1 cu\u1ED9c s\u1ED1ng b\u00ECnh y\u00EAn.";
-                break;
-            default:
-                title = "Vietnam: Ascending Dragon";
-                body = "Navigate through majestic limestone karsts and centuries of folk art, reflecting the desire for a peaceful life.";
-                break;
         }
     }
 }
