@@ -3077,6 +3077,21 @@ MonoBehaviour:
     m_Scale: 1
     m_AtlasIndex: 0
     m_ClassDefinitionType: 0
+  - m_Index: 2386
+    m_Metrics:
+      m_Width: 23.21875
+      m_Height: 4.515625
+      m_HorizontalBearingX: 2.453125
+      m_HorizontalBearingY: 3.9375
+      m_HorizontalAdvance: 28.125
+    m_GlyphRect:
+      m_X: 168
+      m_Y: 417
+      m_Width: 24
+      m_Height: 5
+    m_Scale: 1
+    m_AtlasIndex: 0
+    m_ClassDefinitionType: 0
   - m_Index: 2387
     m_Metrics:
       m_Width: 4.90625
@@ -3494,21 +3509,6 @@ MonoBehaviour:
       m_Y: 173
       m_Width: 8
       m_Height: 9
-    m_Scale: 1
-    m_AtlasIndex: 0
-    m_ClassDefinitionType: 0
-  - m_Index: 2386
-    m_Metrics:
-      m_Width: 23.21875
-      m_Height: 4.515625
-      m_HorizontalBearingX: 2.453125
-      m_HorizontalBearingY: 3.9375
-      m_HorizontalAdvance: 28.125
-    m_GlyphRect:
-      m_X: 168
-      m_Y: 417
-      m_Width: 24
-      m_Height: 5
     m_Scale: 1
     m_AtlasIndex: 0
     m_ClassDefinitionType: 0
@@ -5993,10 +5993,8 @@ MonoBehaviour:
     m_MarkToMarkAdjustmentRecords: []
   m_ShouldReimportFontFeatures: 0
   m_FallbackFontAssetTable:
-  - {fileID: 11400000, guid: ea06cb41e7cdde343a917c1f197f1d5a, type: 2}
-  - {fileID: 11400000, guid: 39aada3198017354784d66ce74ce4b62, type: 2}
-  - {fileID: 11400000, guid: 7ebb417929c3f82488d2ce04651bca9d, type: 2}
-  - {fileID: 11400000, guid: 0aa5c0f415c69bc44b5a8a25a774dfa3, type: 2}
+  - {fileID: 11400000, guid: ee39717bfb17dc247bf80552342fdaf2, type: 2}
+  - {fileID: 11400000, guid: 3f6042f6b2f4b86488e6c0bf22b10b42, type: 2}
   m_FontWeightTable:
   - regularTypeface: {fileID: 0}
     italicTypeface: {fileID: 0}

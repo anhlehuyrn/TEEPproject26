@@ -4927,7 +4927,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: -335.5, y: -0.00018310547}
+  m_AnchoredPosition: {x: -335.5, y: -0.00024414062}
   m_SizeDelta: {x: 800, y: 250}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &507134676
@@ -10464,8 +10464,8 @@ MonoBehaviour:
   pageVietnam: {fileID: 1279517558}
   narrativeTitle: {fileID: 471314406}
   narrativeBody: {fileID: 1125845749}
-  traditionalChineseFont: {fileID: 11400000, guid: ea06cb41e7cdde343a917c1f197f1d5a, type: 2}
-  malayalamFont: {fileID: 11400000, guid: 39aada3198017354784d66ce74ce4b62, type: 2}
+  traditionalChineseFont: {fileID: 11400000, guid: 3f6042f6b2f4b86488e6c0bf22b10b42, type: 2}
+  malayalamFont: {fileID: 11400000, guid: ee39717bfb17dc247bf80552342fdaf2, type: 2}
 --- !u!1 &1212296335
 GameObject:
   m_ObjectHideFlags: 0
