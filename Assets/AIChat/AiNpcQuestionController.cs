@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Text;
 using TMPro;
 using UnityEngine;
@@ -14,56 +15,69 @@ public class AiNpcQuestionController : MonoBehaviour
     [SerializeField] private string serverBaseUrl = "http://127.0.0.1:8787";
 
     [Header("NPC Context")]
-    [SerializeField] private string npcName = "Dragon Boat NPC";
-    [SerializeField] public string targetName = "DragonBoat";
+    [SerializeField] private string npcName = "Culture Guide NPC";
+    [SerializeField] public string targetName = "Culture";
     [TextArea(2, 5)]
-    [SerializeField] public string lessonContext = "You are explaining the Dragon Boat Festival to students.";
+    [SerializeField] public string lessonContext = "You are explaining the culture (festival, traditional costume and food) of Taiwan, Vietnam and Kerala to students.";
 
-    [Header("Visual Image Question")]
+    [Serializable]
+    public class TargetRagContext
+    {
+        public string targetImageName;
+        public string npcName;
+        [TextArea(2, 5)]
+        public string lessonContext;
+    }
+
+    [Header("Dynamic RAG Knowledge Base")]
+    [SerializeField] private List<TargetRagContext> targetRagContexts = new List<TargetRagContext>();
+
+    [Header("UI & State References")]
+    [SerializeField] private Button askButton;
+    [SerializeField] private Button exploreArtworkButton;
+    [SerializeField] private Text answerText;
+    [SerializeField] private Text statusText;
+    [SerializeField] private GameObject[] answerPanelObjects;
+    
+    [Header("Audio Settings")]
+    [SerializeField] private AudioSource answerAudioSource;
+    [SerializeField] private int maxRecordingSeconds = 30;
+    [SerializeField] private int sampleRate = 44100;
+
+    [Header("Vision & AI Settings")]
     [SerializeField] private bool sendTargetImageToAi = true;
     [SerializeField] private XRReferenceImageLibrary referenceImageLibraryForVision;
-    [FormerlySerializedAs("targetImageForVision")]
     [SerializeField] private Texture2D fallbackTargetImageForVision;
-    [Range(1, 100)]
     [SerializeField] private int visionImageJpegQuality = 75;
 
-    [Header("Recording")]
-    [SerializeField] private int sampleRate = 16000;
-    [SerializeField] private int maxRecordingSeconds = 8;
-
-    [Header("UI")]
-    [SerializeField] private Button askButton;
-    [SerializeField] private Text askButtonText;
-    [SerializeField] private TMP_Text askButtonTmpText;
-    [SerializeField] private Button exploreArtworkButton;
-    [SerializeField] private Text exploreArtworkButtonText;
-    [SerializeField] private TMP_Text exploreArtworkButtonTmpText;
-    [SerializeField] private GameObject[] answerPanelObjects;
-    [SerializeField] private Text statusText;
-    [SerializeField] private Text answerText;
+    [Header("UI Formatting")]
     [SerializeField] private int buttonTextMaxFontSize = 40;
     [SerializeField] private int buttonTextMinFontSize = 18;
-    [SerializeField] private Vector2 buttonTextPadding = new Vector2(14f, 8f);
+    [SerializeField] private Vector2 buttonTextPadding = new Vector2(14, 8);
     [SerializeField] private bool makeAnswerTextScrollable = true;
-    [SerializeField] private float answerScrollPadding = 16f;
+    [SerializeField] private float answerScrollPadding = 30f;
     [SerializeField] private float answerScrollSensitivity = 24f;
+    [SerializeField] private float typewriterSpeed = 0.03f; // Tốc độ gõ chữ
 
-    [Header("Floating Items")]
+    [Header("Spawner Reference")]
     [SerializeField] private ARFloatingItemSpawner floatingItemSpawner;
 
-    [Header("Audio")]
-    [SerializeField] private AudioSource answerAudioSource;
-
+    private string currentScannedTargetName;
+    private bool hasVisibleAnswer = false;
+    private bool isBusy = false;
+    private bool isExploring = false;
+    private bool isRecording = false;
     private AudioClip recordingClip;
-    private bool isRecording;
-    private bool isBusy;
-    private bool isExploring;
-    private bool hasVisibleAnswer;
+    
+    private Text askButtonText;
+    private TMP_Text askButtonTmpText;
+    private Text exploreArtworkButtonText;
+    private TMP_Text exploreArtworkButtonTmpText;
+    
+    private RectTransform answerTextRect;
     private ScrollRect answerScrollRect;
     private RectTransform answerViewportRect;
     private RectTransform answerContentRect;
-    private RectTransform answerTextRect;
-    private string currentScannedTargetName;
 
     public bool HasVisibleAnswer => hasVisibleAnswer;
 
@@ -72,37 +86,86 @@ public class AiNpcQuestionController : MonoBehaviour
         if (!string.IsNullOrWhiteSpace(scannedTargetName))
         {
             currentScannedTargetName = scannedTargetName;
+            UpdateRagContextForTarget(scannedTargetName);
+        }
+    }
+
+    public void UpdateRagContextForTarget(string scannedTargetName)
+    {
+        if (string.IsNullOrWhiteSpace(scannedTargetName)) return;
+
+        currentScannedTargetName = scannedTargetName;
+
+        if (targetRagContexts != null)
+        {
+            foreach (TargetRagContext ragCtx in targetRagContexts)
+            {
+                if (ragCtx != null && ragCtx.targetImageName == scannedTargetName)
+                {
+                    this.npcName = ragCtx.npcName;
+                    this.lessonContext = ragCtx.lessonContext;
+                    Debug.Log($"[RAG Context Switched] NPC: {npcName} | Target: {scannedTargetName}");
+                    return;
+                }
+            }
+        }
+
+        switch (scannedTargetName)
+        {
+            case "DongHo":
+                this.npcName = "Dong Ho Guide";
+                this.lessonContext = "You are explaining Dong Ho folk painting to students, focusing on woodblock printing, natural colors, and symbols of prosperity like 'The Mice's Wedding'. Keep it concise and engaging.";
+                break;
+            case "VN_cloth":
+                this.npcName = "Vietnamese Costume Guide";
+                this.lessonContext = "You are explaining traditional Vietnamese clothing like the 'Ao Tu Than' (Four-panel dress) to students, highlighting its elegance and history in Northern Vietnam.";
+                break;
+            case "VN_food":
+                this.npcName = "Vietnamese Cuisine Guide";
+                this.lessonContext = "You are explaining 'Banh Phu The', a traditional Vietnamese sweet cake symbolizing love, loyalty, and balance in marriage customs.";
+                break;
+            case "VN_fest":
+                this.npcName = "Vietnamese Festival Guide";
+                this.lessonContext = "You are explaining the Dong Ky Firecracker Festival in Vietnam. Focus on grand processions, village traditions, community unity, and wishes for prosperity.";
+                break;
+            case "KL_cloth":
+                this.npcName = "Kerala Costume Guide";
+                this.lessonContext = "You are explaining the Kasavu Saree, a traditional white-and-gold elegant attire from Kerala, India. It symbolizes Kerala's heritage, simplicity, and grace.";
+                break;
+            case "KL_food":
+                this.npcName = "Kerala Cuisine Guide";
+                this.lessonContext = "You are explaining 'Kerala Sadya', a grand vegetarian feast served on a banana leaf. Describe its rich flavors, various side dishes, and how it celebrates togetherness.";
+                break;
+            case "KL_fest":
+                this.npcName = "Kerala Festival Guide";
+                this.lessonContext = "You are explaining the Onam harvest festival in Kerala. Mention King Mahabali, joy, colors, Pookkalam (flower carpets), and unity.";
+                break;
+            case "TW_cloth":
+                this.npcName = "Taiwanese Costume Guide";
+                this.lessonContext = "You are explaining the traditional clothing of the Paiwan indigenous people in Taiwan. Discuss its ancient style, elegance, beadwork, and aesthetics.";
+                break;
+            case "TW_food":
+                this.npcName = "Taiwanese Cuisine Guide";
+                this.lessonContext = "You are explaining Taiwanese Beef Noodle Soup to students. Mention its rich broth, tender beef, noodles, and how it represents generations of culinary tradition.";
+                break;
+            case "TW_fest":
+                this.npcName = "Taiwanese Festival Guide";
+                this.lessonContext = "You are explaining the Taiwan Lantern Festival. Describe the glowing lanterns lighting up the night sky, community celebrations, and making wishes.";
+                break;
+            default:
+                break;
         }
     }
 
     private void Awake()
     {
-        if (answerAudioSource == null)
-        {
-            answerAudioSource = GetComponent<AudioSource>();
-        }
-
+        if (answerAudioSource == null) answerAudioSource = GetComponent<AudioSource>();
         ConfigureAnswerText();
 
-        if (askButtonText == null && askButton != null)
-        {
-            askButtonText = askButton.GetComponentInChildren<Text>();
-        }
-
-        if (askButtonTmpText == null && askButton != null)
-        {
-            askButtonTmpText = askButton.GetComponentInChildren<TMP_Text>();
-        }
-
-        if (exploreArtworkButtonText == null && exploreArtworkButton != null)
-        {
-            exploreArtworkButtonText = exploreArtworkButton.GetComponentInChildren<Text>();
-        }
-
-        if (exploreArtworkButtonTmpText == null && exploreArtworkButton != null)
-        {
-            exploreArtworkButtonTmpText = exploreArtworkButton.GetComponentInChildren<TMP_Text>();
-        }
+        if (askButtonText == null && askButton != null) askButtonText = askButton.GetComponentInChildren<Text>();
+        if (askButtonTmpText == null && askButton != null) askButtonTmpText = askButton.GetComponentInChildren<TMP_Text>();
+        if (exploreArtworkButtonText == null && exploreArtworkButton != null) exploreArtworkButtonText = exploreArtworkButton.GetComponentInChildren<Text>();
+        if (exploreArtworkButtonTmpText == null && exploreArtworkButton != null) exploreArtworkButtonTmpText = exploreArtworkButton.GetComponentInChildren<TMP_Text>();
 
         ConfigureButtonText(askButtonText);
         ConfigureButtonText(askButtonTmpText);
@@ -116,27 +179,14 @@ public class AiNpcQuestionController : MonoBehaviour
 
     public void ToggleRecording()
     {
-        if (isBusy || isExploring)
-        {
-            return;
-        }
-
-        if (isRecording)
-        {
-            StopRecordingAndAsk();
-        }
-        else
-        {
-            StartRecording();
-        }
+        if (isBusy || isExploring) return;
+        if (isRecording) StopRecordingAndAsk();
+        else StartRecording();
     }
 
     public void StartRecording()
     {
-        if (isBusy || isRecording || isExploring)
-        {
-            return;
-        }
+        if (isBusy || isRecording || isExploring) return;
 
 #if UNITY_ANDROID
         if (!UnityEngine.Android.Permission.HasUserAuthorizedPermission(UnityEngine.Android.Permission.Microphone))
@@ -154,7 +204,6 @@ public class AiNpcQuestionController : MonoBehaviour
         }
 
         ClearCurrentAnswer();
-
         recordingClip = Microphone.Start(null, false, maxRecordingSeconds, sampleRate);
         isRecording = true;
         SetStatus("Recording...");
@@ -164,10 +213,7 @@ public class AiNpcQuestionController : MonoBehaviour
 
     public void StopRecordingAndAsk()
     {
-        if (!isRecording || recordingClip == null)
-        {
-            return;
-        }
+        if (!isRecording || recordingClip == null) return;
 
         int samplePosition = Microphone.GetPosition(null);
         Microphone.End(null);
@@ -191,29 +237,15 @@ public class AiNpcQuestionController : MonoBehaviour
 
     public void ToggleExploreArtwork()
     {
-        if (isBusy || isRecording)
-        {
-            return;
-        }
-
-        if (isExploring)
-        {
-            StopExploringArtwork();
-        }
-        else
-        {
-            StartExploringArtwork();
-        }
+        if (isBusy || isRecording) return;
+        if (isExploring) StopExploringArtwork();
+        else StartExploringArtwork();
     }
 
     public void ResetQuestionSession()
     {
         StopAllCoroutines();
-
-        if (isRecording)
-        {
-            Microphone.End(null);
-        }
+        if (isRecording) Microphone.End(null);
 
         isRecording = false;
         isBusy = false;
@@ -229,10 +261,7 @@ public class AiNpcQuestionController : MonoBehaviour
         }
 
         HideAnswerPanels();
-        if (floatingItemSpawner != null)
-        {
-            floatingItemSpawner.HideFloatingItems();
-        }
+        if (floatingItemSpawner != null) floatingItemSpawner.HideFloatingItems();
 
         SetStatus("");
         SetButtonEnabled(true);
@@ -288,23 +317,45 @@ public class AiNpcQuestionController : MonoBehaviour
                 yield break;
             }
 
-            if (answerText != null)
-            {
-                ConfigureAnswerText();
-                answerText.text = "<b>User:</b>   " + response.transcript + "\n<b>AI:</b>   " + response.reply;
-                UpdateAnswerTextLayout();
-            }
-
+            // --- BẮT ĐẦU HIỆU ỨNG TỰ ĐỘNG GÕ CHỮ & PHÁT ÂM THANH ---
             ShowAnswerPanels();
-            SetStatus("Answer received.");
+            SetStatus("AI is replying...");
 
             if (!string.IsNullOrEmpty(response.audioUrl))
             {
-                yield return DownloadAndPlayAudio(CombineUrl(serverBaseUrl, response.audioUrl));
+                // Bắt đầu tải và phát âm thanh song song
+                StartCoroutine(DownloadAndPlayAudio(CombineUrl(serverBaseUrl, response.audioUrl)));
             }
-        }
 
+            if (answerText != null)
+            {
+                ConfigureAnswerText();
+                string prefixText = "<b>User:</b>   " + response.transcript + "\n\n<b>AI:</b>   ";
+                // Kích hoạt hiệu ứng gõ chữ và chờ nó hoàn thành
+                yield return StartCoroutine(TypewriterAnswer(prefixText, response.reply));
+            }
+            // --- KẾT THÚC HIỆU ỨNG ---
+        }
+        
+        SetStatus("Ready");
         FinishBusyState();
+    }
+
+    // Coroutine tạo hiệu ứng gõ từng chữ một
+    private IEnumerator TypewriterAnswer(string prefix, string aiReply)
+    {
+        string currentText = prefix;
+        answerText.text = currentText;
+        UpdateAnswerTextLayout();
+
+        foreach (char c in aiReply)
+        {
+            currentText += c;
+            answerText.text = currentText;
+            UpdateAnswerTextLayout();
+            
+            yield return new WaitForSeconds(typewriterSpeed);
+        }
     }
 
     private IEnumerator DownloadAndPlayAudio(string audioUrl)
@@ -312,7 +363,6 @@ public class AiNpcQuestionController : MonoBehaviour
         using (UnityWebRequest audioRequest = UnityWebRequestMultimedia.GetAudioClip(audioUrl, AudioType.MPEG))
         {
             yield return audioRequest.SendWebRequest();
-
             if (audioRequest.result != UnityWebRequest.Result.Success)
             {
                 SetStatus("Audio download failed: " + audioRequest.error);
@@ -330,13 +380,9 @@ public class AiNpcQuestionController : MonoBehaviour
 
     private void AddVisionImageToRequest(AskRequest request)
     {
-        if (!sendTargetImageToAi)
-        {
-            return;
-        }
+        if (!sendTargetImageToAi) return;
 
         Texture2D imageForVision = FindReferenceImageTexture(request.targetName) ?? fallbackTargetImageForVision;
-
         if (imageForVision == null)
         {
             SetStatus("No target image texture found. AI will answer without image context.");
@@ -345,7 +391,6 @@ public class AiNpcQuestionController : MonoBehaviour
 
         Texture2D readableTexture = CreateReadableTextureCopy(imageForVision);
         byte[] jpgBytes = readableTexture.EncodeToJPG(visionImageJpegQuality);
-
         Destroy(readableTexture);
 
         request.imageBase64 = Convert.ToBase64String(jpgBytes);
@@ -354,20 +399,13 @@ public class AiNpcQuestionController : MonoBehaviour
 
     private string GetActiveTargetName()
     {
-        if (!string.IsNullOrWhiteSpace(currentScannedTargetName))
-        {
-            return currentScannedTargetName;
-        }
-
+        if (!string.IsNullOrWhiteSpace(currentScannedTargetName)) return currentScannedTargetName;
         return targetName;
     }
 
     private Texture2D FindReferenceImageTexture(string referenceImageName)
     {
-        if (referenceImageLibraryForVision == null || string.IsNullOrWhiteSpace(referenceImageName))
-        {
-            return null;
-        }
+        if (referenceImageLibraryForVision == null || string.IsNullOrWhiteSpace(referenceImageName)) return null;
 
         for (int i = 0; i < referenceImageLibraryForVision.count; i++)
         {
@@ -377,7 +415,6 @@ public class AiNpcQuestionController : MonoBehaviour
                 return referenceImage.texture;
             }
         }
-
         return null;
     }
 
@@ -395,7 +432,6 @@ public class AiNpcQuestionController : MonoBehaviour
 
         RenderTexture.active = previousActive;
         RenderTexture.ReleaseTemporary(temporary);
-
         return copy;
     }
 
@@ -405,13 +441,7 @@ public class AiNpcQuestionController : MonoBehaviour
         float[] sourceData = new float[samplePosition * channels];
         sourceClip.GetData(sourceData, 0);
 
-        AudioClip trimmedClip = AudioClip.Create(
-            "StudentQuestion",
-            samplePosition,
-            channels,
-            sourceClip.frequency,
-            false);
-
+        AudioClip trimmedClip = AudioClip.Create("StudentQuestion", samplePosition, channels, sourceClip.frequency, false);
         trimmedClip.SetData(sourceData, 0);
         return trimmedClip;
     }
@@ -424,25 +454,16 @@ public class AiNpcQuestionController : MonoBehaviour
         SetAskButtonLabel("Ask AI");
     }
 
-    private void SetButtonEnabled(bool enabled)
-    {
-        SetAskButtonEnabled(enabled);
-    }
+    private void SetButtonEnabled(bool enabled) => SetAskButtonEnabled(enabled);
 
     private void SetAskButtonEnabled(bool enabled)
     {
-        if (askButton != null)
-        {
-            askButton.interactable = enabled;
-        }
+        if (askButton != null) askButton.interactable = enabled;
     }
 
     private void SetExploreArtworkButtonEnabled(bool enabled)
     {
-        if (exploreArtworkButton != null)
-        {
-            exploreArtworkButton.interactable = enabled;
-        }
+        if (exploreArtworkButton != null) exploreArtworkButton.interactable = enabled;
     }
 
     private void SetAskButtonLabel(string label)
@@ -452,7 +473,6 @@ public class AiNpcQuestionController : MonoBehaviour
             askButtonText.text = label;
             ConfigureButtonText(askButtonText);
         }
-
         if (askButtonTmpText != null)
         {
             askButtonTmpText.text = label;
@@ -467,7 +487,6 @@ public class AiNpcQuestionController : MonoBehaviour
             exploreArtworkButtonText.text = label;
             ConfigureButtonText(exploreArtworkButtonText);
         }
-
         if (exploreArtworkButtonTmpText != null)
         {
             exploreArtworkButtonTmpText.text = label;
@@ -477,11 +496,7 @@ public class AiNpcQuestionController : MonoBehaviour
 
     private void ConfigureButtonText(Text buttonLabel)
     {
-        if (buttonLabel == null)
-        {
-            return;
-        }
-
+        if (buttonLabel == null) return;
         int maxSize = Mathf.Max(1, buttonTextMaxFontSize);
         int minSize = Mathf.Clamp(buttonTextMinFontSize, 1, maxSize);
 
@@ -497,11 +512,7 @@ public class AiNpcQuestionController : MonoBehaviour
 
     private void ConfigureButtonText(TMP_Text buttonLabel)
     {
-        if (buttonLabel == null)
-        {
-            return;
-        }
-
+        if (buttonLabel == null) return;
         float maxSize = Mathf.Max(1f, buttonTextMaxFontSize);
         float minSize = Mathf.Clamp(buttonTextMinFontSize, 1f, maxSize);
 
@@ -517,15 +528,8 @@ public class AiNpcQuestionController : MonoBehaviour
 
     private void ApplyButtonTextPadding(RectTransform labelRect)
     {
-        if (labelRect == null)
-        {
-            return;
-        }
-
-        if (labelRect.anchorMin != Vector2.zero || labelRect.anchorMax != Vector2.one)
-        {
-            return;
-        }
+        if (labelRect == null) return;
+        if (labelRect.anchorMin != Vector2.zero || labelRect.anchorMax != Vector2.one) return;
 
         float horizontalPadding = Mathf.Max(0f, buttonTextPadding.x);
         float verticalPadding = Mathf.Max(0f, buttonTextPadding.y);
@@ -536,23 +540,18 @@ public class AiNpcQuestionController : MonoBehaviour
     private void StartExploringArtwork()
     {
         ClearCurrentAnswer();
-
         isExploring = true;
         SetAskButtonEnabled(false);
         SetExploreArtworkButtonEnabled(true);
         SetExploreArtworkButtonLabel("Exploring");
 
-        if (floatingItemSpawner != null)
-        {
-            floatingItemSpawner.ShowFloatingItems();
-        }
+        if (floatingItemSpawner != null) floatingItemSpawner.ShowFloatingItems();
     }
 
     private void ClearCurrentAnswer()
     {
         StopAnswerAudio();
         HideAnswerPanels();
-
         if (answerText != null)
         {
             answerText.text = "";
@@ -567,19 +566,12 @@ public class AiNpcQuestionController : MonoBehaviour
         SetExploreArtworkButtonEnabled(true);
         SetExploreArtworkButtonLabel("Explore Artwork");
 
-        if (floatingItemSpawner != null)
-        {
-            floatingItemSpawner.HideFloatingItems();
-        }
+        if (floatingItemSpawner != null) floatingItemSpawner.HideFloatingItems();
     }
 
     public void StopAnswerAudio()
     {
-        if (answerAudioSource == null)
-        {
-            return;
-        }
-
+        if (answerAudioSource == null) return;
         answerAudioSource.Stop();
         answerAudioSource.clip = null;
     }
@@ -601,11 +593,7 @@ public class AiNpcQuestionController : MonoBehaviour
 
     private void ConfigureAnswerText()
     {
-        if (answerText == null)
-        {
-            return;
-        }
-
+        if (answerText == null) return;
         answerText.supportRichText = true;
         answerText.horizontalOverflow = HorizontalWrapMode.Wrap;
         answerText.verticalOverflow = VerticalWrapMode.Overflow;
@@ -615,26 +603,18 @@ public class AiNpcQuestionController : MonoBehaviour
 
     private void SetupAnswerScrollView()
     {
-        if (!makeAnswerTextScrollable || answerText == null || answerTextRect == null)
-        {
-            return;
-        }
+        if (!makeAnswerTextScrollable || answerText == null || answerTextRect == null) return;
 
         answerScrollRect = answerText.GetComponentInParent<ScrollRect>();
         if (answerScrollRect != null)
         {
-            answerViewportRect = answerScrollRect.viewport != null
-                ? answerScrollRect.viewport
-                : answerScrollRect.GetComponent<RectTransform>();
+            answerViewportRect = answerScrollRect.viewport != null ? answerScrollRect.viewport : answerScrollRect.GetComponent<RectTransform>();
             answerContentRect = answerScrollRect.content != null ? answerScrollRect.content : answerTextRect;
             return;
         }
 
         RectTransform originalParent = answerTextRect.parent as RectTransform;
-        if (originalParent == null)
-        {
-            return;
-        }
+        if (originalParent == null) return;
 
         int originalSiblingIndex = answerTextRect.GetSiblingIndex();
         Vector2 originalAnchorMin = answerTextRect.anchorMin;
@@ -727,18 +707,10 @@ public class AiNpcQuestionController : MonoBehaviour
 
     private void UpdateAnswerTextLayout()
     {
-        if (answerText == null || answerTextRect == null)
-        {
-            return;
-        }
-
-        if (!makeAnswerTextScrollable || answerViewportRect == null || answerContentRect == null)
-        {
-            return;
-        }
+        if (answerText == null || answerTextRect == null) return;
+        if (!makeAnswerTextScrollable || answerViewportRect == null || answerContentRect == null) return;
 
         Canvas.ForceUpdateCanvases();
-
         float viewportHeight = Mathf.Max(1f, answerViewportRect.rect.height);
         float contentHeight = Mathf.Max(viewportHeight, answerText.preferredHeight + answerScrollPadding);
 
@@ -747,10 +719,8 @@ public class AiNpcQuestionController : MonoBehaviour
         answerTextRect.offsetMin = new Vector2(0f, answerTextRect.offsetMin.y);
         answerTextRect.offsetMax = new Vector2(-answerScrollPadding, answerTextRect.offsetMax.y);
 
-        if (answerScrollRect != null)
-        {
-            answerScrollRect.verticalNormalizedPosition = 1f;
-        }
+        // GHÌM THANH CUỘN XUỐNG ĐÁY MỖI KHI CHỮ ĐƯỢC CẬP NHẬT
+        if (answerScrollRect != null) answerScrollRect.verticalNormalizedPosition = 0f; 
     }
 
     private IEnumerator UpdateAnswerTextLayoutNextFrame()
@@ -763,33 +733,19 @@ public class AiNpcQuestionController : MonoBehaviour
     {
         foreach (GameObject panelObject in answerPanelObjects ?? new GameObject[0])
         {
-            if (panelObject != null)
-            {
-                panelObject.SetActive(visible);
-            }
+            if (panelObject != null) panelObject.SetActive(visible);
         }
     }
 
     private void SetStatus(string message)
     {
-        if (statusText != null)
-        {
-            statusText.text = message;
-        }
+        if (statusText != null) statusText.text = message;
     }
 
     private string CombineUrl(string baseUrl, string path)
     {
-        if (string.IsNullOrEmpty(baseUrl))
-        {
-            return path;
-        }
-
-        if (string.IsNullOrEmpty(path))
-        {
-            return baseUrl;
-        }
-
+        if (string.IsNullOrEmpty(baseUrl)) return path;
+        if (string.IsNullOrEmpty(path)) return baseUrl;
         return baseUrl.TrimEnd('/') + "/" + path.TrimStart('/');
     }
 
@@ -855,7 +811,6 @@ public static class WavUtility
             pcmData[i * 2] = bytes[0];
             pcmData[i * 2 + 1] = bytes[1];
         }
-
         return pcmData;
     }
 

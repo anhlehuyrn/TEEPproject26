@@ -3,9 +3,19 @@ using UnityEngine.SceneManagement;
 
 public class SceneLoader : MonoBehaviour
 {
-    // Hàm này cho phép bạn gõ tên Scene muốn đến trực tiếp từ ngoài màn hình Unity
     public void LoadSceneByName(string sceneName)
     {
+        SceneManager.LoadScene(sceneName);
+    }
+
+    // THÊM HÀM NÀY VÀO
+    public void LoadSceneAndOpenExplore(string sceneName)
+    {
+        // Lưu một cờ hiệu báo rằng "Hãy mở tab Explore"
+        PlayerPrefs.SetInt("OpenExploreTab", 1);
+        PlayerPrefs.Save();
+        
+        // Chuyển Scene
         SceneManager.LoadScene(sceneName);
     }
 }

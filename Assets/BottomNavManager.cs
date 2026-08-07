@@ -1,5 +1,5 @@
 using UnityEngine;
-using TMPro; // Thư viện để chỉnh màu chữ TMP
+using TMPro;
 
 public class BottomNavManager : MonoBehaviour
 {
@@ -8,36 +8,72 @@ public class BottomNavManager : MonoBehaviour
     public TextMeshProUGUI exploreText;
     public TextMeshProUGUI passportText;
 
+    [Header("Các Panel chính")]
+    public GameObject homePanel;
+    public GameObject explorePanel;
+    public GameObject passportPanel;
+
+    [Header("Các trang cuộn (Kéo thả vào đây)")]
+    public GameObject scrollPageTaiwan;
+    public GameObject scrollPageVietnam;
+    public GameObject scrollPageKerala;
+
+    [Header("Nhân vật Avatar 3D")]
+    public GameObject avatarHA; // Đã thêm biến này để điều khiển HA
+
     [Header("Màu sắc")]
-    // Đã thiết lập sẵn màu Nâu vàng (Sáng) và Đen xám (Tối) theo thiết kế của bạn
     public Color activeColor = new Color(0.45f, 0.36f, 0f, 1f); 
     public Color inactiveColor = new Color(0.06f, 0.06f, 0.06f, 1f);
 
     void Start()
     {
-        // Khi mới bật App lên, mặc định chữ Home sẽ sáng
-        SetActiveTab(0);
+        if (PlayerPrefs.GetInt("OpenExploreTab", 0) == 1)
+        {
+            PlayerPrefs.SetInt("OpenExploreTab", 0);
+            PlayerPrefs.Save();
+            SetActiveTab(1);
+        }
+        else
+        {
+            SetActiveTab(0);
+        }
     }
 
-    // Hàm này sẽ được gọi khi bạn bấm vào các nút
     public void SetActiveTab(int tabIndex)
     {
-        // 1. Tắt đèn toàn bộ các chữ trước
+        // 1. Tắt đèn chữ
         if (homeText != null) homeText.color = inactiveColor;
         if (exploreText != null) exploreText.color = inactiveColor;
         if (passportText != null) passportText.color = inactiveColor;
 
-        // 2. Thắp sáng chữ tương ứng với tab đang mở (0 = Home, 1 = Explore, 2 = Passport)
+        // 2. ẨN TẤT CẢ PANEL, SCROLL PAGE VÀ TẮT LUÔN AVATAR
+        if (homePanel != null) homePanel.SetActive(false);
+        if (explorePanel != null) explorePanel.SetActive(false);
+        if (passportPanel != null) passportPanel.SetActive(false);
+        
+        if (scrollPageTaiwan != null) scrollPageTaiwan.SetActive(false);
+        if (scrollPageVietnam != null) scrollPageVietnam.SetActive(false);
+        if (scrollPageKerala != null) scrollPageKerala.SetActive(false);
+
+        if (avatarHA != null) avatarHA.SetActive(false); // Bắt buộc tắt Avatar
+
+        // 3. Bật đúng Panel được yêu cầu
         switch (tabIndex)
         {
             case 0:
                 if (homeText != null) homeText.color = activeColor;
+                if (homePanel != null) homePanel.SetActive(true);
                 break;
             case 1:
                 if (exploreText != null) exploreText.color = activeColor;
+                if (explorePanel != null) explorePanel.SetActive(true);
+                
+                // BẬT LẠI AVATAR KHI VÀO EXPLORE (Sẽ kích hoạt lại hiệu ứng & Âm thanh)
+                if (avatarHA != null) avatarHA.SetActive(true); 
                 break;
             case 2:
                 if (passportText != null) passportText.color = activeColor;
+                if (passportPanel != null) passportPanel.SetActive(true);
                 break;
         }
     }

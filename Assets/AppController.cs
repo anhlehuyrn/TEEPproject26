@@ -110,13 +110,17 @@ public class AppController : MonoBehaviour
         {
             languageDropdown.onValueChanged.RemoveAllListeners();
             languageDropdown.onValueChanged.AddListener(delegate { 
+                // Lưu các cấu hình vào PlayerPrefs
                 PlayerPrefs.SetInt("SavedLanguage", languageDropdown.value);
+                PlayerPrefs.SetInt("SelectedLanguageIndex", languageDropdown.value);
+                
+                // Gọi Save 1 lần duy nhất ở cuối để ghi tất cả dữ liệu
                 PlayerPrefs.Save();
+                
+                // Cập nhật lại giao diện
                 UpdateUI(); 
             });
         }
-
-        UpdateUI();
     }
 
     private void AutoFindUnassignedReferences()

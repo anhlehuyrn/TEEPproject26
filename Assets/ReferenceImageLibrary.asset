@@ -33,8 +33,8 @@ MonoBehaviour:
       m_GuidLow: 5614143751597126602
       m_GuidHigh: 6128757868719262636
     m_SerializedTextureGuid:
-      m_GuidLow: 4086037065374558339
-      m_GuidHigh: 14850144902861628665
+      m_GuidLow: 8711307864458675607
+      m_GuidHigh: 385669984111692683
     m_Size: {x: 0, y: 0}
     m_SpecifySize: 0
     m_Name: VN_cloth
@@ -43,8 +43,8 @@ MonoBehaviour:
       m_GuidLow: 4756719790337959848
       m_GuidHigh: 15819217275348462231
     m_SerializedTextureGuid:
-      m_GuidLow: 7652764092043683883
-      m_GuidHigh: 659655046016462585
+      m_GuidLow: 11886141160091122345
+      m_GuidHigh: 17085002870256376667
     m_Size: {x: 0, y: 0}
     m_SpecifySize: 0
     m_Name: VN_fest
@@ -53,9 +53,69 @@ MonoBehaviour:
       m_GuidLow: 5072965971476976419
       m_GuidHigh: 4014405808258325424
     m_SerializedTextureGuid:
-      m_GuidLow: 6126051191668418415
-      m_GuidHigh: 15631499773798774537
+      m_GuidLow: 9022055742200408911
+      m_GuidHigh: 15202004738200085432
     m_Size: {x: 0, y: 0}
     m_SpecifySize: 0
     m_Name: VN_food
+    m_Texture: {fileID: 0}
+  - m_SerializedGuid:
+      m_GuidLow: 5474379657462213702
+      m_GuidHigh: 10610527187464992141
+    m_SerializedTextureGuid:
+      m_GuidLow: 3766352197962974831
+      m_GuidHigh: 2142051134408349785
+    m_Size: {x: 0, y: 0}
+    m_SpecifySize: 0
+    m_Name: TW_cloth
+    m_Texture: {fileID: 0}
+  - m_SerializedGuid:
+      m_GuidLow: 4742206124154374579
+      m_GuidHigh: 2481345105515155628
+    m_SerializedTextureGuid:
+      m_GuidLow: 9945312220580073126
+      m_GuidHigh: 13040836144163612920
+    m_Size: {x: 0, y: 0}
+    m_SpecifySize: 0
+    m_Name: TW_fest
+    m_Texture: {fileID: 0}
+  - m_SerializedGuid:
+      m_GuidLow: 5423272213609569402
+      m_GuidHigh: 205492478984083644
+    m_SerializedTextureGuid:
+      m_GuidLow: 4874065770520092004
+      m_GuidHigh: 1541649699542962040
+    m_Size: {x: 0, y: 0}
+    m_SpecifySize: 0
+    m_Name: TW_food
+    m_Texture: {fileID: 0}
+  - m_SerializedGuid:
+      m_GuidLow: 4627467108960231416
+      m_GuidHigh: 14499918818419593130
+    m_SerializedTextureGuid:
+      m_GuidLow: 9990263133073062648
+      m_GuidHigh: 12451264624673664650
+    m_Size: {x: 0, y: 0}
+    m_SpecifySize: 0
+    m_Name: KL_cloth
+    m_Texture: {fileID: 0}
+  - m_SerializedGuid:
+      m_GuidLow: 5213410111517849949
+      m_GuidHigh: 18079770245069088916
+    m_SerializedTextureGuid:
+      m_GuidLow: 6373787311380822143
+      m_GuidHigh: 13294039895285743226
+    m_Size: {x: 0, y: 0}
+    m_SpecifySize: 0
+    m_Name: KL_fest
+    m_Texture: {fileID: 0}
+  - m_SerializedGuid:
+      m_GuidLow: 5524759286610078814
+      m_GuidHigh: 8240275738512386227
+    m_SerializedTextureGuid:
+      m_GuidLow: 14597523748254168322
+      m_GuidHigh: 17824782719031114266
+    m_Size: {x: 0, y: 0}
+    m_SpecifySize: 0
+    m_Name: KL_food
     m_Texture: {fileID: 0}
