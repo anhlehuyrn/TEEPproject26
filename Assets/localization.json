@@ -68,7 +68,10 @@
     { "key": "Stamps Collected", "en": "Stamps Collected", "zh": "已收集印記", "ml": "ശേഖരിച്ച സ്റ്റാമ്പുകൾ", "vi": "Con dấu đã thu thập" },
     { "key": "Regions Explored", "en": "Regions Explored", "zh": "已探索地區", "ml": "പര്യവേക്ഷണം ചെയ്ത പ്രദേശങ്ങൾ", "vi": "Khu vực đã khám phá" },
     { "key": "GLOBAL PROGRESS", "en": "GLOBAL PROGRESS", "zh": "總進度", "ml": "ആഗോള പുരോഗതി", "vi": "TIẾN TRÌNH CHUNG" },
-    { "key": "Taiwan: Cultural Fusion", "en": "Taiwan: Cultural Fusion", "zh": "台灣：文化融合", "ml": "തായ്‌വാൻ: സാംസ്കാരിക സംയോജനം", "vi": "Đài Loan: Giao Thoa Văn Hóa" }
+    { "key": "Taiwan: Cultural Fusion", "en": "Taiwan: Cultural Fusion", "zh": "台灣：文化融合", "ml": "തായ്‌വാൻ: സാംസ്കാരിക സംയോജനം", "vi": "Đài Loan: Giao Thoa Văn Hóa" },
+    { "key": "Quick guide", "en": "Quick guide", "zh": "快速指南", "ml": "പെട്ടെന്നുള്ള ഗൈഡ്", "vi": "Hướng dẫn nhanh" },
+    { "key": "To ask AI", "en": "To ask AI", "zh": "詢問 AI", "ml": "AI-യോട് ചോദിക്കുക", "vi": "Hỏi AI" },
+    { "key": "Explore culture", "en": "Explore culture", "zh": "探索文化", "ml": "സംസ്കാരം പര്യവേക്ഷണം ചെയ്യുക", "vi": "Khám phá văn hóa" }
     
   
   ]
