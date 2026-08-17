@@ -6,20 +6,18 @@ public class PassportManager : MonoBehaviour
 {
     [Header("User Profile")]
     public Image avatarImage;
-    public Sprite[] avatarList; // Kéo thả các ảnh avatar có sẵn vào đây
-    public TMP_InputField nameInput; // Ô để người dùng nhập tên
+    public Sprite[] avatarList; 
+    public TMP_InputField nameInput; 
 
     [Header("Journey Progress")]
-    public Image progressFillBar; // Kéo thanh ngang màu vàng (đã set Fill Horizontal) vào đây
-    public TextMeshProUGUI progressPercentageText; // Chữ 66%
-    public TextMeshProUGUI stampsCollectedText; // Số lượng tem
-    public TextMeshProUGUI regionsExploredText; // Số lượng vùng
+    public Image progressFillBar; 
+    public TextMeshProUGUI progressPercentageText; 
+    public TextMeshProUGUI stampsCollectedText; 
+    public TextMeshProUGUI regionsExploredText; 
 
-    [Header("Stamp Status (Demo)")]
-    // Giả lập 9 con tem. Bạn có thể tự tick vào ô trong Inspector để test tiến độ
-    public bool[] unlockedStamps = new bool[9];
-
-    private const int TOTAL_STAMPS = 9;
+    [Header("Real Stamp Data Connection")]
+    [Tooltip("Điền tên 9 bức tranh vào đây (VD: DongHo, VN_cloth, KL_fest...) để hệ thống tự đếm")]
+    public string[] stampTargetNames;
 
     private void OnEnable()
     {
@@ -30,15 +28,21 @@ public class PassportManager : MonoBehaviour
     public void SyncPassportData()
     {
         int unlockedCount = 0;
+        int totalStamps = stampTargetNames.Length;
 
-        // Đếm số lượng tem đã thu thập
-        foreach (bool isUnlocked in unlockedStamps)
+        if (totalStamps == 0) return; // Tránh lỗi chia cho 0 nếu chưa nhập tên tranh
+
+        // --- ĐỌC DỮ LIỆU THẬT TỪ PLAYERPREFS ---
+        foreach (string targetName in stampTargetNames)
         {
-            if (isUnlocked) unlockedCount++;
+            if (PlayerPrefs.GetInt("Stamp_" + targetName, 0) == 1)
+            {
+                unlockedCount++;
+            }
         }
 
         // --- CẬP NHẬT TIẾN ĐỘ ---
-        float progress = (float)unlockedCount / TOTAL_STAMPS;
+        float progress = (float)unlockedCount / totalStamps;
         
         if (progressFillBar != null) progressFillBar.fillAmount = progress;
         if (progressPercentageText != null) progressPercentageText.text = Mathf.RoundToInt(progress * 100) + "%";
@@ -48,14 +52,13 @@ public class PassportManager : MonoBehaviour
 
         // Giả lập tính Vùng (Region): Cứ có tem của vùng nào thì cộng vùng đó. 
         // Ở đây giả lập đơn giản: Cứ 3 tem là 1 vùng.
-        int regions = Mathf.CeilToInt((float)unlockedCount / 3);
+        int regions = Mathf.CeilToInt((float)unlockedCount / 3f);
         if (regionsExploredText != null) regionsExploredText.text = regions.ToString();
     }
 
-    // --- XỬ LÝ AVATAR & TÊN ---
+    // --- XỬ LÝ AVATAR & TÊN (Giữ nguyên của bạn vì đã viết rất tốt) ---
     private void LoadUserProfile()
     {
-        // Tải Tên
         if (nameInput != null)
         {
             nameInput.text = PlayerPrefs.GetString("UserName", "E. Montgomery");
@@ -63,11 +66,9 @@ public class PassportManager : MonoBehaviour
             nameInput.onEndEdit.AddListener(delegate { SaveName(); });
         }
 
-        // Tải Avatar
         if (avatarImage != null && avatarList.Length > 0)
         {
             int savedAvatarIndex = PlayerPrefs.GetInt("UserAvatar", 0);
-            // Đảm bảo index không bị vượt quá giới hạn mảng
             savedAvatarIndex = Mathf.Clamp(savedAvatarIndex, 0, avatarList.Length - 1);
             avatarImage.sprite = avatarList[savedAvatarIndex];
         }
@@ -82,15 +83,14 @@ public class PassportManager : MonoBehaviour
         }
     }
 
-    // Gắn hàm này vào sự kiện OnClick() của nút Avatar
     public void CycleAvatar()
     {
         if (avatarList == null || avatarList.Length == 0 || avatarImage == null) return;
 
         int currentIndex = PlayerPrefs.GetInt("UserAvatar", 0);
-        currentIndex++; // Chuyển sang ảnh tiếp theo
+        currentIndex++; 
         
-        if (currentIndex >= avatarList.Length) currentIndex = 0; // Quay lại ảnh đầu nếu hết danh sách
+        if (currentIndex >= avatarList.Length) currentIndex = 0; 
 
         avatarImage.sprite = avatarList[currentIndex];
         PlayerPrefs.SetInt("UserAvatar", currentIndex);

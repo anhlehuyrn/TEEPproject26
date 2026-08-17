@@ -104,6 +104,11 @@ public class AiNpcQuestionController : MonoBehaviour
         {
             currentScannedTargetName = scannedTargetName;
             UpdateRagContextForTarget(scannedTargetName);
+            
+            // --- BỔ SUNG: LƯU TRẠNG THÁI ĐÃ THU THẬP STAMP ---
+            PlayerPrefs.SetInt("Stamp_" + scannedTargetName, 1);
+            PlayerPrefs.Save();
+            // ------------------------------------------------
         }
     }
 
@@ -113,7 +118,8 @@ public class AiNpcQuestionController : MonoBehaviour
 
         currentScannedTargetName = scannedTargetName;
 
-        if (targetRagContexts != null)
+        // 1. Nếu trên Inspector có điền, ưu tiên lấy trên Inspector
+        if (targetRagContexts != null && targetRagContexts.Count > 0)
         {
             foreach (TargetRagContext ragCtx in targetRagContexts)
             {
@@ -126,18 +132,51 @@ public class AiNpcQuestionController : MonoBehaviour
             }
         }
 
+        // 2. TỰ ĐỘNG NẠP KIẾN THỨC BẰNG C# (Không cần gõ tay vào Inspector nữa)
         switch (scannedTargetName)
         {
-            case "DongHo": this.npcName = "Dong Ho Guide"; break;
-            case "VN_cloth": this.npcName = "Vietnamese Costume Guide"; break;
-            case "VN_food": this.npcName = "Vietnamese Cuisine Guide"; break;
-            case "VN_fest": this.npcName = "Vietnamese Festival Guide"; break;
-            case "KL_cloth": this.npcName = "Kerala Costume Guide"; break;
-            case "KL_food": this.npcName = "Kerala Cuisine Guide"; break;
-            case "KL_fest": this.npcName = "Kerala Festival Guide"; break;
-            case "TW_cloth": this.npcName = "Taiwanese Costume Guide"; break;
-            case "TW_food": this.npcName = "Taiwanese Cuisine Guide"; break;
-            case "TW_fest": this.npcName = "Taiwanese Festival Guide"; break;
+            case "DongHo":
+                this.npcName = "Dong Ho Guide";
+                this.lessonContext = "You are explaining Dong Ho folk painting to students, focusing on woodblock printing, natural colors, and symbols of prosperity like 'The Mice's Wedding'. Keep it concise and engaging.";
+                break;
+            case "VN_cloth":
+                this.npcName = "Vietnamese Costume Guide";
+                this.lessonContext = "You are a guide explaining traditional Vietnamese clothing like the 'Ao Tu Than' (Four-panel dress) to students. Focus on its elegance, its history in Northern Vietnam, and how it represents the beauty of Vietnamese women.";
+                break;
+            case "VN_food":
+                this.npcName = "Vietnamese Cuisine Guide";
+                this.lessonContext = "You are explaining 'Banh Phu The', a traditional Vietnamese sweet cake symbolizing love, loyalty, and balance in marriage customs.";
+                break;
+            case "VN_fest":
+                this.npcName = "Vietnamese Festival Guide";
+                this.lessonContext = "You are a guide explaining the Dong Ky Firecracker Festival in Vietnam. Focus on the vibrant village atmosphere, the grand firecracker processions, honoring tradition, community unity, and wishes for prosperity.";
+                break;
+            case "KL_cloth":
+                this.npcName = "Kerala Costume Guide";
+                this.lessonContext = "You are explaining the Kasavu Saree, a traditional white-and-gold elegant attire from Kerala, India. It symbolizes Kerala's heritage, simplicity, and grace.";
+                break;
+            case "KL_food":
+                this.npcName = "Kerala Cuisine Guide";
+                this.lessonContext = "You are explaining 'Kerala Sadya', a grand vegetarian feast served on a banana leaf. Describe its rich flavors, various side dishes, and how it celebrates togetherness.";
+                break;
+            case "KL_fest":
+                this.npcName = "Kerala Festival Guide";
+                this.lessonContext = "You are explaining the Onam harvest festival in Kerala. Mention King Mahabali, joy, colors, Pookkalam (flower carpets), and unity.";
+                break;
+            case "TW_cloth":
+                this.npcName = "Taiwanese Costume Guide";
+                this.lessonContext = "You are explaining the traditional clothing of the Paiwan indigenous people in Taiwan. Discuss its ancient style, elegance, beadwork, and aesthetics.";
+                break;
+            case "TW_food":
+                this.npcName = "Taiwanese Cuisine Guide";
+                this.lessonContext = "You are a guide explaining Taiwanese Beef Noodle Soup to students. Mention its rich broth, tender beef, noodles, and how it is shaped by generations of culinary tradition.";
+                break;
+            case "TW_fest":
+                this.npcName = "Taiwanese Festival Guide";
+                this.lessonContext = "You are explaining the Taiwan Lantern Festival. Describe the glowing lanterns lighting up the night sky, community celebrations, and making wishes.";
+                break;
+            default:
+                break;
         }
     }
 
