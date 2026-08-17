@@ -260,6 +260,115 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 153725934}
   m_CullTransparentMesh: 1
+--- !u!1 &161355557
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 161355558}
+  - component: {fileID: 161355561}
+  - component: {fileID: 161355560}
+  - component: {fileID: 161355559}
+  m_Layer: 5
+  m_Name: VideoPanel
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!224 &161355558
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 161355557}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 876897976}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
+  m_AnchoredPosition: {x: 0, y: 95}
+  m_SizeDelta: {x: 900, y: 400}
+  m_Pivot: {x: 0.5, y: 0.5}
+--- !u!328 &161355559
+VideoPlayer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 161355557}
+  m_Enabled: 1
+  m_VideoClip: {fileID: 0}
+  m_TargetCameraAlpha: 1
+  m_TargetCamera3DLayout: 0
+  m_TargetCamera: {fileID: 0}
+  m_TargetTexture: {fileID: 8400000, guid: 794ad50fad5d5514bbc14c72bff59ca0, type: 2}
+  m_TimeReference: 0
+  m_TargetMaterialRenderer: {fileID: 0}
+  m_TargetMaterialProperty: <noninit>
+  m_RenderMode: 2
+  m_AspectRatio: 2
+  m_DataSource: 0
+  m_TimeUpdateMode: 2
+  m_PlaybackSpeed: 1
+  m_AudioOutputMode: 2
+  m_TargetAudioSources:
+  - {fileID: 0}
+  m_DirectAudioVolumes:
+  - 1
+  m_Url: 
+  m_EnabledAudioTracks: 01
+  m_DirectAudioMutes: 00
+  m_ControlledAudioTrackCount: 1
+  m_PlayOnAwake: 0
+  m_SkipOnDrop: 1
+  m_Looping: 1
+  m_WaitForFirstFrame: 1
+  m_FrameReadyEventEnabled: 0
+  m_VideoShaders: []
+--- !u!114 &161355560
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 161355557}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1344c3c82d62a2a41a3576d8abb8e3ea, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.RawImage
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Texture: {fileID: 8400000, guid: 794ad50fad5d5514bbc14c72bff59ca0, type: 2}
+  m_UVRect:
+    serializedVersion: 2
+    x: 0
+    y: 0
+    width: 1
+    height: 1
+--- !u!222 &161355561
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 161355557}
+  m_CullTransparentMesh: 1
 --- !u!1 &195429921
 GameObject:
   m_ObjectHideFlags: 0
@@ -723,6 +832,7 @@ MonoBehaviour:
   restartDialogueWhenTrackingFound: 1
   trackingStableDelay: 0.15
   resetWaitFrames: 2
+  lostTrackingGracePeriod: 0.8
 --- !u!1 &282163984
 GameObject:
   m_ObjectHideFlags: 0
@@ -990,11 +1100,11 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 876897976}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -720, y: 436}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 38, y: -15}
   m_SizeDelta: {x: 50, y: 50}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_Pivot: {x: 0, y: 1}
 --- !u!114 &730552138
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1199,6 +1309,7 @@ RectTransform:
   - {fileID: 908586920}
   - {fileID: 2010844429}
   - {fileID: 1425813300}
+  - {fileID: 161355558}
   - {fileID: 282163985}
   - {fileID: 730552137}
   m_Father: {fileID: 0}
@@ -1240,11 +1351,11 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 876897976}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0.5, y: 0.5}
-  m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 16, y: 441}
-  m_SizeDelta: {x: 100, y: 45}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_AnchorMin: {x: 0.5, y: 1}
+  m_AnchorMax: {x: 0.5, y: 1}
+  m_AnchoredPosition: {x: 0, y: -25}
+  m_SizeDelta: {x: 192, y: 72}
+  m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &908586921
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1560,9 +1671,7 @@ MonoBehaviour:
   targetImageName: 
   hideUiWhenTrackingLost: 1
   showOnlyOncePerScene: 0
-  flowchart: {fileID: 1355906781}
-  waitForFungusDialogueToFinish: 1
-  waitForDialogueToStartSeconds: 2
+  lostTrackingGracePeriod: 0.8
   delayAfterDialogueEnds: 0.5
   readyUiObjects:
   - {fileID: 2010844428}
@@ -1810,6 +1919,7 @@ GameObject:
   - component: {fileID: 1355906805}
   - component: {fileID: 1355906804}
   - component: {fileID: 1355906803}
+  - component: {fileID: 1355906824}
   m_Layer: 0
   m_Name: Flowchart
   m_TagString: Untagged
@@ -1841,7 +1951,8 @@ MonoBehaviour:
     y: -340
     width: 1114
     height: 859
-  selectedBlocks: []
+  selectedBlocks:
+  - {fileID: 1355906802}
   selectedCommands: []
   variables: []
   description: 
@@ -2134,7 +2245,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Fungus::Fungus.Block
   nodeRect:
     serializedVersion: 2
-    x: 70.5
+    x: 69.5
     y: 127.5
     width: 127.25
     height: 40
@@ -2746,6 +2857,20 @@ MonoBehaviour:
   - {fileID: 1355906822}
   - {fileID: 1355906808}
   suppressAllAutoSelections: 0
+--- !u!114 &1355906824
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1355906780}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e5724422a635e425bae0af9ffe2615d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Fungus::Fungus.Localization
+  activeLanguage: 
+  localizationFile: {fileID: 4900000, guid: f77f5a7eb4d8589488d67e2853d5fb28, type: 3}
 --- !u!1 &1376973169
 GameObject:
   m_ObjectHideFlags: 0
@@ -3712,6 +3837,17 @@ MonoBehaviour:
   answerScrollSensitivity: 24
   typewriterSpeed: 0.03
   floatingItemSpawner: {fileID: 1526063655}
+  videoPanel: {fileID: 161355557}
+  videoPlayer: {fileID: 161355559}
+  targetVideos:
+  - targetImageName: VN_cloth
+    videoClip: {fileID: 32900000, guid: d7b32eeb6de33ab4ebba88556d517442, type: 3}
+  - targetImageName: VN_fest
+    videoClip: {fileID: 32900000, guid: 007f0652af7089549a2e15bb8a042d2f, type: 3}
+  - targetImageName: TW_food
+    videoClip: {fileID: 32900000, guid: c20b36887eeccde478dff030034326df, type: 3}
+  - targetImageName: KL_fest
+    videoClip: {fileID: 32900000, guid: 32e520b11229aad47aa882015e2cc7ea, type: 3}
 --- !u!114 &1993532145
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3867,6 +4003,52 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2010844428}
   m_CullTransparentMesh: 1
+--- !u!1 &2049849059
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2049849060}
+  - component: {fileID: 2049849061}
+  m_Layer: 0
+  m_Name: LanguageManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &2049849060
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2049849059}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 658.01306, y: 666.9349, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2049849061
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2049849059}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c04f22686deb21b4ab36097ac24fc0c9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LanguageManager
+  languageDropdown: {fileID: 0}
+  fungusLocalization: {fileID: 1355906824}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -3882,3 +4064,4 @@ SceneRoots:
   - {fileID: 876897976}
   - {fileID: 1194620487}
   - {fileID: 1526063654}
+  - {fileID: 2049849060}
