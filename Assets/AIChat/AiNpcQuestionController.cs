@@ -105,10 +105,9 @@ public class AiNpcQuestionController : MonoBehaviour
             currentScannedTargetName = scannedTargetName;
             UpdateRagContextForTarget(scannedTargetName);
             
-            // --- BỔ SUNG: LƯU TRẠNG THÁI ĐÃ THU THẬP STAMP ---
+            // --- LƯU TRẠNG THÁI ĐÃ THU THẬP TEM HỘ CHIẾU ---
             PlayerPrefs.SetInt("Stamp_" + scannedTargetName, 1);
             PlayerPrefs.Save();
-            // ------------------------------------------------
         }
     }
 
@@ -118,7 +117,7 @@ public class AiNpcQuestionController : MonoBehaviour
 
         currentScannedTargetName = scannedTargetName;
 
-        // 1. Nếu trên Inspector có điền, ưu tiên lấy trên Inspector
+        // 1. Kiểm tra nếu có dữ liệu trên Inspector thì ưu tiên
         if (targetRagContexts != null && targetRagContexts.Count > 0)
         {
             foreach (TargetRagContext ragCtx in targetRagContexts)
@@ -132,7 +131,7 @@ public class AiNpcQuestionController : MonoBehaviour
             }
         }
 
-        // 2. TỰ ĐỘNG NẠP KIẾN THỨC BẰNG C# (Không cần gõ tay vào Inspector nữa)
+        // 2. Nếu Inspector trống, dùng dữ liệu Hardcode này
         switch (scannedTargetName)
         {
             case "DongHo":
@@ -174,8 +173,6 @@ public class AiNpcQuestionController : MonoBehaviour
             case "TW_fest":
                 this.npcName = "Taiwanese Festival Guide";
                 this.lessonContext = "You are explaining the Taiwan Lantern Festival. Describe the glowing lanterns lighting up the night sky, community celebrations, and making wishes.";
-                break;
-            default:
                 break;
         }
     }
@@ -239,6 +236,7 @@ public class AiNpcQuestionController : MonoBehaviour
         SetExploreArtworkButtonEnabled(false);
     }
 
+    // --- BẢN VÁ LỖI BỘ NHỚ AUDIO CỦA ANTIGRAVITY ---
     public void StopRecordingAndAsk()
     {
         if (!isRecording || recordingClip == null) return;
@@ -253,10 +251,14 @@ public class AiNpcQuestionController : MonoBehaviour
             return;
         }
 
-        AudioClip trimmedClip = TrimClip(recordingClip, samplePosition);
-        byte[] wavBytes = WavUtility.FromAudioClip(trimmedClip);
+        // Chuyển đổi thẳng ra byte, KHÔNG sinh ra AudioClip rác gây tốn RAM
+        byte[] wavBytes = WavUtility.FromAudioClipTrimmed(recordingClip, samplePosition);
+        
+        // Hủy clip ghi âm ngay lập tức
+        Destroy(recordingClip);
+        recordingClip = null;
 
-        SetAskButtonLabel("Sending");
+        SetAskButtonLabel("Sending...");
         SetExploreArtworkButtonEnabled(false);
         StartCoroutine(SendQuestionRoutine(wavBytes));
     }
@@ -408,6 +410,7 @@ public class AiNpcQuestionController : MonoBehaviour
         }
     }
 
+    // --- BẢN VÁ LỖI XÓA RÁC AUDIO CỦA ANTIGRAVITY ---
     private IEnumerator DownloadAndPlayAudio(string audioUrl)
     {
         using (UnityWebRequest audioRequest = UnityWebRequestMultimedia.GetAudioClip(audioUrl, AudioType.MPEG))
@@ -418,6 +421,15 @@ public class AiNpcQuestionController : MonoBehaviour
                 AudioClip clip = DownloadHandlerAudioClip.GetContent(audioRequest);
                 if (answerAudioSource != null && clip != null)
                 {
+                    // CRITICAL FIX: Dọn dẹp clip âm thanh cũ khỏi bộ nhớ RAM
+                    if (answerAudioSource.clip != null)
+                    {
+                        AudioClip oldClip = answerAudioSource.clip;
+                        answerAudioSource.Stop();
+                        answerAudioSource.clip = null;
+                        Destroy(oldClip);
+                    }
+
                     answerAudioSource.clip = clip;
                     answerAudioSource.Play();
                 }
@@ -474,17 +486,6 @@ public class AiNpcQuestionController : MonoBehaviour
         return copy;
     }
 
-    private AudioClip TrimClip(AudioClip sourceClip, int samplePosition)
-    {
-        int channels = sourceClip.channels;
-        float[] sourceData = new float[samplePosition * channels];
-        sourceClip.GetData(sourceData, 0);
-
-        AudioClip trimmedClip = AudioClip.Create("StudentQuestion", samplePosition, channels, sourceClip.frequency, false);
-        trimmedClip.SetData(sourceData, 0);
-        return trimmedClip;
-    }
-
     private void FinishBusyState()
     {
         isBusy = false;
@@ -493,7 +494,6 @@ public class AiNpcQuestionController : MonoBehaviour
         SetAskButtonLabel("Ask AI");
     }
 
-    // ĐÃ SỬA TÊN HÀM Ở ĐÂY ĐỂ TRÁNH LỖI CS0103
     private void SetButtonEnabled(bool enabled) { if (askButton != null) askButton.interactable = enabled; }
     private void SetExploreArtworkButtonEnabled(bool enabled) { if (exploreArtworkButton != null) exploreArtworkButton.interactable = enabled; }
     
@@ -509,7 +509,6 @@ public class AiNpcQuestionController : MonoBehaviour
         if (exploreArtworkButtonTmpText != null) { exploreArtworkButtonTmpText.text = label; ConfigureButtonText(exploreArtworkButtonTmpText); }
     }
 
-    // PHỤC HỒI LẠI TOÀN BỘ LOGIC CĂN CHỈNH UI
     private void ConfigureButtonText(Text buttonLabel)
     {
         if (buttonLabel == null) return;
@@ -744,47 +743,42 @@ public class AiNpcQuestionController : MonoBehaviour
     [Serializable] private class AskResponse { public string transcript; public string reply; public string audioUrl; public string error; }
 }
 
+// --- THUẬT TOÁN ZERO-ALLOCATION CỦA ANTIGRAVITY ---
 public static class WavUtility
 {
-    public static byte[] FromAudioClip(AudioClip clip)
+    public static byte[] FromAudioClipTrimmed(AudioClip clip, int totalSamplesToTake)
     {
-        float[] samples = new float[clip.samples * clip.channels];
+        int channels = clip.channels;
+        int totalFloats = totalSamplesToTake * channels;
+        float[] samples = new float[totalFloats];
         clip.GetData(samples, 0);
 
-        byte[] pcmData = ConvertFloatSamplesToPcm16(samples);
-        byte[] wav = new byte[44 + pcmData.Length];
+        byte[] wav = new byte[44 + (totalFloats * 2)];
 
         WriteAscii(wav, 0, "RIFF");
-        WriteInt(wav, 4, 36 + pcmData.Length);
+        WriteInt(wav, 4, 36 + (totalFloats * 2));
         WriteAscii(wav, 8, "WAVE");
         WriteAscii(wav, 12, "fmt ");
         WriteInt(wav, 16, 16);
         WriteShort(wav, 20, 1);
-        WriteShort(wav, 22, (short)clip.channels);
+        WriteShort(wav, 22, (short)channels);
         WriteInt(wav, 24, clip.frequency);
-        WriteInt(wav, 28, clip.frequency * clip.channels * 2);
-        WriteShort(wav, 32, (short)(clip.channels * 2));
+        WriteInt(wav, 28, clip.frequency * channels * 2);
+        WriteShort(wav, 32, (short)(channels * 2));
         WriteShort(wav, 34, 16);
         WriteAscii(wav, 36, "data");
-        WriteInt(wav, 40, pcmData.Length);
-        Buffer.BlockCopy(pcmData, 0, wav, 44, pcmData.Length);
+        WriteInt(wav, 40, totalFloats * 2);
+
+        // Convert PCM directly into output buffer
+        int byteIndex = 44;
+        for (int i = 0; i < totalFloats; i++)
+        {
+            short sampleVal = (short)(Mathf.Clamp(samples[i], -1f, 1f) * short.MaxValue);
+            wav[byteIndex++] = (byte)(sampleVal & 0xFF);
+            wav[byteIndex++] = (byte)((sampleVal >> 8) & 0xFF);
+        }
 
         return wav;
-    }
-
-    private static byte[] ConvertFloatSamplesToPcm16(float[] samples)
-    {
-        byte[] pcmData = new byte[samples.Length * 2];
-
-        for (int i = 0; i < samples.Length; i++)
-        {
-            float sample = Mathf.Clamp(samples[i], -1f, 1f);
-            short value = (short)(sample * short.MaxValue);
-            byte[] bytes = BitConverter.GetBytes(value);
-            pcmData[i * 2] = bytes[0];
-            pcmData[i * 2 + 1] = bytes[1];
-        }
-        return pcmData;
     }
 
     private static void WriteAscii(byte[] buffer, int offset, string value)

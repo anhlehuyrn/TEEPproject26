@@ -7,17 +7,27 @@ public class StampManager : MonoBehaviour
     [Serializable]
     public class Stamp
     {
-        [Tooltip("Tên hình ảnh (Phải giống hệt lúc quét, VD: DongHo, VN_cloth)")]
         public string targetName; 
-        
-        [Tooltip("Vật thể chứa hình cái tem trên UI")]
-        public GameObject stampObject; 
+        public GameObject stampObject;
+        [HideInInspector] public Image cachedImage;
     }
 
-    [Header("Danh sách 9 cái tem")]
+    [Header("Stamp Database")]
     public Stamp[] stamps;
 
-    // Hàm OnEnable tự động chạy mỗi khi trang Passport được bật lên
+    private void Awake()
+    {
+        // Cache UI components at boot to avoid runtime GetComponent calls
+        if (stamps == null) return;
+        for (int i = 0; i < stamps.Length; i++)
+        {
+            if (stamps[i] != null && stamps[i].stampObject != null)
+            {
+                stamps[i].cachedImage = stamps[i].stampObject.GetComponent<Image>();
+            }
+        }
+    }
+
     private void OnEnable()
     {
         RefreshStamps();
@@ -25,37 +35,34 @@ public class StampManager : MonoBehaviour
 
     public void RefreshStamps()
     {
-        foreach (Stamp stamp in stamps)
+        if (stamps == null) return;
+
+        for (int i = 0; i < stamps.Length; i++)
         {
-            // Đọc dữ liệu xem tem này đã được quét chưa (Mặc định là 0 - Chưa quét)
+            Stamp stamp = stamps[i];
+            if (stamp == null || stamp.stampObject == null) continue;
+
             bool isCollected = PlayerPrefs.GetInt("Stamp_" + stamp.targetName, 0) == 1;
 
-            if (stamp.stampObject != null)
+            if (stamp.cachedImage != null)
             {
-                // Cách an toàn để ẩn/hiện mà không làm hỏng lưới GridLayout:
-                // Tắt component Image thay vì tắt cả GameObject
-                Image stampImage = stamp.stampObject.GetComponent<Image>();
-                if (stampImage != null)
-                {
-                    stampImage.enabled = isCollected;
-                }
-                else
-                {
-                    stamp.stampObject.SetActive(isCollected);
-                }
+                stamp.cachedImage.enabled = isCollected;
+            }
+            else
+            {
+                stamp.stampObject.SetActive(isCollected);
             }
         }
     }
 
-    // Nút dùng để test: Xóa hết tem làm lại từ đầu
     public void ResetAllStampsForTesting()
     {
-        foreach (Stamp stamp in stamps)
+        if (stamps == null) return;
+        for (int i = 0; i < stamps.Length; i++)
         {
-            PlayerPrefs.SetInt("Stamp_" + stamp.targetName, 0);
+            if (stamps[i] != null) PlayerPrefs.SetInt("Stamp_" + stamps[i].targetName, 0);
         }
         PlayerPrefs.Save();
         RefreshStamps();
-        Debug.Log("Đã xóa toàn bộ tem!");
     }
 }

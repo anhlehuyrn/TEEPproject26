@@ -10,44 +10,46 @@ public class LanguageManager : MonoBehaviour
     [Header("Fungus")]
     public Localization fungusLocalization;
 
-    // Mã ngôn ngữ tương ứng với 4 tùy chọn trong Dropdown của bạn
-    // 0: Tiếng Anh, 1: Tiếng Trung phồn thể, 2: Tiếng Malayalam, 3: Tiếng Việt
     private readonly string[] languageCodes = { "en", "zh-TW", "ml", "vi" };
 
     private void Start()
     {
-        // Đọc ngôn ngữ đã lưu từ cuốn sổ tay PlayerPrefs (mặc định là 0 - Tiếng Anh)
         int savedLangIndex = PlayerPrefs.GetInt("AppLanguage", 0);
 
-        // Cập nhật lại UI Dropdown cho đúng với ngôn ngữ đã lưu
         if (languageDropdown != null)
         {
-            // Tạm thời tắt lắng nghe sự kiện để tránh lỗi vòng lặp khi gán value
             languageDropdown.onValueChanged.RemoveAllListeners();
             languageDropdown.value = savedLangIndex;
             languageDropdown.onValueChanged.AddListener(OnLanguageChanged);
         }
 
-        // Áp dụng ngôn ngữ vào Fungus
-        ApplyLanguage(savedLangIndex);
+        // False: Khi mới mở App, chỉ đổi chữ, KHÔNG reset NPC
+        ApplyLanguage(savedLangIndex, false);
     }
 
     public void OnLanguageChanged(int index)
     {
-        // Lưu lựa chọn mới vào sổ tay
         PlayerPrefs.SetInt("AppLanguage", index);
         PlayerPrefs.Save();
         
-        // Đổi ngôn ngữ ngay lập tức
-        ApplyLanguage(index);
+        // True: Khi user chủ động bấm đổi ngôn ngữ, ép NPC reset để nói lại
+        ApplyLanguage(index, true);
     }
 
-    private void ApplyLanguage(int index)
+    private void ApplyLanguage(int index, bool forceResetNPC)
     {
         if (fungusLocalization != null && index >= 0 && index < languageCodes.Length)
         {
             fungusLocalization.SetActiveLanguage(languageCodes[index]);
-            Debug.Log("Đã đổi ngôn ngữ Fungus sang: " + languageCodes[index]);
+
+            if (forceResetNPC)
+            {
+                ARFungusDialogueTrigger arTrigger = Object.FindFirstObjectByType<ARFungusDialogueTrigger>();
+                if (arTrigger != null)
+                {
+                    arTrigger.ResetAllDialogues(); 
+                }
+            }
         }
     }
 }

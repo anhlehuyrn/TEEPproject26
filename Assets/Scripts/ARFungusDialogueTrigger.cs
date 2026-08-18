@@ -17,7 +17,6 @@ public class ARFungusDialogueTrigger : MonoBehaviour
         [HideInInspector] public bool hasPlayed;
     }
 
-    // --- BỔ SUNG: C# Events để báo cho UI biết ---
     public static event Action<string> OnDialogueStarted;
     public static event Action<string> OnDialogueEnded;
 
@@ -32,22 +31,25 @@ public class ARFungusDialogueTrigger : MonoBehaviour
     [SerializeField] private float trackingStableDelay = 0.15f;
     [SerializeField] private int resetWaitFrames = 2;
     
-    // --- BỔ SUNG: Thời gian khoan hồng chống nhấp nháy AR ---
-    [SerializeField, Tooltip("Thời gian chờ trước khi ngắt hội thoại do mất dấu (giây)")] 
-    private float lostTrackingGracePeriod = 0.8f;
+    [SerializeField, Tooltip("Grace period before terminating dialogue")] 
+    private float lostTrackingGracePeriod = 2.5f;
 
     private readonly Dictionary<TrackableId, ImageDialogue> activeDialogues = new Dictionary<TrackableId, ImageDialogue>();
     private readonly Dictionary<TrackableId, Coroutine> pendingDialogues = new Dictionary<TrackableId, Coroutine>();
     private readonly Dictionary<TrackableId, TrackingState> trackingStates = new Dictionary<TrackableId, TrackingState>();
-    
-    // Lưu trữ các bộ đếm thời gian khi mất dấu
     private readonly Dictionary<TrackableId, Coroutine> lostTrackingCoroutines = new Dictionary<TrackableId, Coroutine>();
+    
+    private Coroutine monitorCompletionCoroutine;
     private Coroutine resetCoroutine;
+    private Block[] cachedBlocks;
 
     private void Awake()
     {
         if (trackedImageManager == null)
             trackedImageManager = GetComponent<ARTrackedImageManager>();
+
+        if (flowchart != null)
+            cachedBlocks = flowchart.GetComponents<Block>();
     }
 
     private void OnEnable()
@@ -60,6 +62,11 @@ public class ARFungusDialogueTrigger : MonoBehaviour
     {
         if (trackedImageManager != null)
             trackedImageManager.trackablesChanged.RemoveListener(OnTrackedImagesChanged);
+
+        StopAllCoroutines();
+        pendingDialogues.Clear();
+        lostTrackingCoroutines.Clear();
+        activeDialogues.Clear();
     }
 
     private void OnTrackedImagesChanged(ARTrackablesChangedEventArgs<ARTrackedImage> eventArgs)
@@ -68,7 +75,6 @@ public class ARFungusDialogueTrigger : MonoBehaviour
         foreach (ARTrackedImage image in eventArgs.updated) UpdateDialogueForImage(image);
         foreach (KeyValuePair<TrackableId, ARTrackedImage> removedImage in eventArgs.removed)
         {
-            // Bắt đầu đếm ngược thời gian khoan hồng khi ảnh bị gỡ
             HandleLostTracking(removedImage.Key, removedImage.Value.referenceImage.name);
         }
     }
@@ -81,17 +87,15 @@ public class ARFungusDialogueTrigger : MonoBehaviour
         ImageDialogue dialogue = FindDialogue(image.referenceImage.name);
         if (dialogue == null) return;
 
-        // Xử lý chống nhấp nháy Tracking (Hysteresis)
         if (image.trackingState == TrackingState.Tracking)
         {
-            // Nếu ảnh được tìm lại trong thời gian khoan hồng, hủy bộ đếm tắt
             if (lostTrackingCoroutines.TryGetValue(image.trackableId, out Coroutine lostCoroutine))
             {
                 if (lostCoroutine != null) StopCoroutine(lostCoroutine);
                 lostTrackingCoroutines.Remove(image.trackableId);
             }
         }
-        else // TrackingState.Limited hoặc None
+        else
         {
             HandleLostTracking(image.trackableId, image.referenceImage.name);
             return;
@@ -111,20 +115,21 @@ public class ARFungusDialogueTrigger : MonoBehaviour
 
     private IEnumerator LostTrackingRoutine(TrackableId trackableId, string imageName)
     {
-        // Chờ thời gian khoan hồng (Grace Period)
         yield return new WaitForSeconds(lostTrackingGracePeriod);
         
         lostTrackingCoroutines.Remove(trackableId);
+        
         StopDialogueForImage(trackableId);
         
-        // Báo cho hệ thống biết hội thoại đã bị ngắt
-        OnDialogueEnded?.Invoke(imageName); 
+        OnDialogueEnded?.Invoke(imageName);
     }
 
     private ImageDialogue FindDialogue(string scannedImageName)
     {
-        foreach (ImageDialogue dialogue in imageDialogues)
-            if (dialogue.imageName == scannedImageName) return dialogue;
+        for (int i = 0; i < imageDialogues.Count; i++)
+        {
+            if (imageDialogues[i].imageName == scannedImageName) return imageDialogues[i];
+        }
         return null;
     }
 
@@ -155,34 +160,33 @@ public class ARFungusDialogueTrigger : MonoBehaviour
             dialogue.hasPlayed = true;
             activeDialogues[trackableId] = dialogue;
 
-            // --- BỔ SUNG: Phát tín hiệu Bắt đầu ---
             OnDialogueStarted?.Invoke(dialogue.imageName);
 
-            // Bắt đầu theo dõi để phát tín hiệu Kết thúc
-            StartCoroutine(MonitorDialogueCompletion(dialogue.imageName));
+            if (monitorCompletionCoroutine != null) StopCoroutine(monitorCompletionCoroutine);
+            monitorCompletionCoroutine = StartCoroutine(MonitorDialogueCompletion(dialogue.imageName, trackableId));
         }
     }
 
-    // --- BỔ SUNG: Theo dõi tiến trình Fungus ---
-    private IEnumerator MonitorDialogueCompletion(string imageName)
+    private IEnumerator MonitorDialogueCompletion(string imageName, TrackableId trackableId)
     {
-        yield return null; // Đợi 1 frame để flowchart khởi động
+        yield return new WaitForSeconds(0.25f); 
         
         while (IsFlowchartExecuting())
         {
             yield return null;
         }
         
+        activeDialogues.Remove(trackableId);
+        monitorCompletionCoroutine = null;
         OnDialogueEnded?.Invoke(imageName);
     }
 
     private bool IsFlowchartExecuting()
     {
-        if (flowchart == null) return false;
-        Block[] blocks = flowchart.GetComponents<Block>();
-        foreach (Block block in blocks)
+        if (cachedBlocks == null || cachedBlocks.Length == 0) return false;
+        for (int i = 0; i < cachedBlocks.Length; i++)
         {
-            if (block != null && block.IsExecuting()) return true;
+            if (cachedBlocks[i] != null && cachedBlocks[i].IsExecuting()) return true;
         }
         return false;
     }
@@ -195,9 +199,19 @@ public class ARFungusDialogueTrigger : MonoBehaviour
             pendingDialogues.Remove(trackableId);
         }
 
-        if (!activeDialogues.Remove(trackableId) && pendingDialogue == null) return;
+        activeDialogues.Remove(trackableId);
 
-        if (stopDialogueWhenTrackingLost) StartResetCoroutine();
+        // BẢN VÁ LỖI CỐT LÕI: Chỉ giết kịch bản Fungus nếu KHÔNG CÒN bóng ma (ID) nào khác đang chạy
+        if (activeDialogues.Count == 0 && pendingDialogues.Count == 0)
+        {
+            if (monitorCompletionCoroutine != null)
+            {
+                StopCoroutine(monitorCompletionCoroutine);
+                monitorCompletionCoroutine = null;
+            }
+
+            if (stopDialogueWhenTrackingLost) StartResetCoroutine();
+        }
     }
 
     private IEnumerator ResetFungusDialogueState()
@@ -243,9 +257,9 @@ public class ARFungusDialogueTrigger : MonoBehaviour
 
     public void ResetAllDialogues()
     {
-        foreach (ImageDialogue dialogue in imageDialogues) dialogue.hasPlayed = false;
+        for (int i = 0; i < imageDialogues.Count; i++) imageDialogues[i].hasPlayed = false;
         activeDialogues.Clear();
-        foreach (Coroutine pendingDialogue in pendingDialogues.Values) StopCoroutine(pendingDialogue);
+        foreach (Coroutine pending in pendingDialogues.Values) StopCoroutine(pending);
         pendingDialogues.Clear();
         StartResetCoroutine();
     }

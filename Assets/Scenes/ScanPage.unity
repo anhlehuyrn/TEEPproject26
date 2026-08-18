@@ -296,7 +296,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 17}
-  m_SizeDelta: {x: 1000, y: 600}
+  m_SizeDelta: {x: 960, y: 540}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!328 &161355559
 VideoPlayer:
@@ -315,7 +315,7 @@ VideoPlayer:
   m_TargetMaterialRenderer: {fileID: 0}
   m_TargetMaterialProperty: <noninit>
   m_RenderMode: 2
-  m_AspectRatio: 2
+  m_AspectRatio: 5
   m_DataSource: 0
   m_TimeUpdateMode: 2
   m_PlaybackSpeed: 1
@@ -789,43 +789,43 @@ MonoBehaviour:
   imageDialogues:
   - imageName: DongHo
     blockName: DongHoIntro
-    playOnlyOnce: 1
+    playOnlyOnce: 0
     hasPlayed: 0
   - imageName: VN_cloth
     blockName: VN_clothIntro
-    playOnlyOnce: 1
+    playOnlyOnce: 0
     hasPlayed: 0
   - imageName: VN_food
     blockName: VN_foodIntro
-    playOnlyOnce: 1
+    playOnlyOnce: 0
     hasPlayed: 0
   - imageName: VN_fest
     blockName: VN_festIntro
-    playOnlyOnce: 1
+    playOnlyOnce: 0
     hasPlayed: 0
   - imageName: TW_fest
     blockName: TW_festIntro
-    playOnlyOnce: 1
+    playOnlyOnce: 0
     hasPlayed: 0
   - imageName: TW_food
     blockName: TW_foodIntro
-    playOnlyOnce: 1
+    playOnlyOnce: 0
     hasPlayed: 0
   - imageName: TW_cloth
     blockName: TW_clothIntro
-    playOnlyOnce: 1
+    playOnlyOnce: 0
     hasPlayed: 0
   - imageName: KL_fest
     blockName: KL_festIntro
-    playOnlyOnce: 1
+    playOnlyOnce: 0
     hasPlayed: 0
   - imageName: KL_food
     blockName: KL_foodIntro
-    playOnlyOnce: 1
+    playOnlyOnce: 0
     hasPlayed: 0
   - imageName: KL_cloth
     blockName: KL_clothIntro
-    playOnlyOnce: 1
+    playOnlyOnce: 0
     hasPlayed: 0
   stopDialogueWhenTrackingLost: 1
   hideSayDialogWhenTrackingLost: 1
@@ -1308,7 +1308,6 @@ RectTransform:
   m_Children:
   - {fileID: 908586920}
   - {fileID: 2010844429}
-  - {fileID: 1073313254}
   - {fileID: 1425813300}
   - {fileID: 161355558}
   - {fileID: 282163985}
@@ -1633,15 +1632,15 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1073313253}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 41}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 876897976}
+  m_Father: {fileID: 2010844429}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 665.99994, y: 58.99999}
+  m_AnchoredPosition: {x: 0, y: -2}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1073313255
@@ -2028,8 +2027,9 @@ MonoBehaviour:
     width: 1114
     height: 859
   selectedBlocks:
-  - {fileID: 1355906802}
-  selectedCommands: []
+  - {fileID: 1355906800}
+  selectedCommands:
+  - {fileID: 1355906811}
   variables: []
   description: 
   stepPause: 0
@@ -2553,10 +2553,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Fungus::Fungus.Say
   itemId: 47
   indentLevel: 0
-  storyText: 'A graceful four-panel dress representing the
-
-    beauty and identity
-    of northern Vietnamese
+  storyText: 'A graceful four-panel dress representing the beauty and identity of
+    northern Vietnamese
 
     women.'
   description: 
@@ -2585,9 +2583,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Fungus::Fungus.Say
   itemId: 46
   indentLevel: 0
-  storyText: 'A vibrant village festival featuring grand
-
-    firecracker processions,
+  storyText: 'A vibrant village festival featuring grand firecracker processions,
     honoring tradition,
 
     unity, and wishes for prosperlty.'
@@ -3962,10 +3958,20 @@ MonoBehaviour:
     videoClip: {fileID: 32900000, guid: d7b32eeb6de33ab4ebba88556d517442, type: 3}
   - targetImageName: VN_fest
     videoClip: {fileID: 32900000, guid: 007f0652af7089549a2e15bb8a042d2f, type: 3}
+  - targetImageName: VN_food
+    videoClip: {fileID: 32900000, guid: 0c6a343cf75b19f48b5f1c432b2c8deb, type: 3}
   - targetImageName: TW_food
     videoClip: {fileID: 32900000, guid: c20b36887eeccde478dff030034326df, type: 3}
+  - targetImageName: TW_cloth
+    videoClip: {fileID: 32900000, guid: 722a25b2cacbd5846bf4c77af24305c7, type: 3}
+  - targetImageName: TW_fest
+    videoClip: {fileID: 32900000, guid: 02ada8e27102da74b8f45f9c584a7c28, type: 3}
   - targetImageName: KL_fest
     videoClip: {fileID: 32900000, guid: 32e520b11229aad47aa882015e2cc7ea, type: 3}
+  - targetImageName: KL_food
+    videoClip: {fileID: 32900000, guid: c9bbe80ad896f3f4394079b2247e1ba9, type: 3}
+  - targetImageName: KL_cloth
+    videoClip: {fileID: 32900000, guid: ca078e9f7a9d2ee4e9adcac743949e05, type: 3}
 --- !u!114 &1993532145
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4019,12 +4025,13 @@ RectTransform:
   m_LocalPosition: {x: 0, y: 0, z: 41}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 1073313254}
   m_Father: {fileID: 876897976}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 666, y: 59}
+  m_AnchoredPosition: {x: 672, y: 69}
   m_SizeDelta: {x: 70, y: 70}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2010844430

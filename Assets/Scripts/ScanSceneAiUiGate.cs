@@ -11,10 +11,9 @@ public class ScanSceneAiUiGate : MonoBehaviour
     [SerializeField] private ARTrackedImageManager trackedImageManager;
     [SerializeField] private string targetImageName;
     [SerializeField] private bool hideUiWhenTrackingLost = true;
-    [SerializeField] private bool showOnlyOncePerScene = true;
+    [SerializeField] private bool showOnlyOncePerScene = false; // Set to false to allow re-entry
     
-    // --- BỔ SUNG: Thời gian khoan hồng chống nhấp nháy UI ---
-    [SerializeField, Tooltip("Độ trễ trước khi giấu UI đi do rớt AR")] 
+    [SerializeField, Tooltip("Grace period before hiding UI when tracking is lost")] 
     private float lostTrackingGracePeriod = 0.8f;
 
     [Header("Fungus Dialogue Timing")]
@@ -29,15 +28,15 @@ public class ScanSceneAiUiGate : MonoBehaviour
 
     private Coroutine revealUiCoroutine;
     private Coroutine lostTrackingCoroutine;
-    private bool hasShownUi;
+    private bool hasDialoguePlayedForCurrentTarget = false;
     private readonly HashSet<TrackableId> trackingTargetImages = new HashSet<TrackableId>();
 
     private void Awake()
     {
         if (trackedImageManager == null)
-            trackedImageManager = FindObjectOfType<ARTrackedImageManager>();
+            trackedImageManager = FindFirstObjectByType<ARTrackedImageManager>();
 
-        CacheAiQuestionControllersIfNeeded();
+        CacheAiQuestionControllers();
         HideAiUi();
     }
 
@@ -46,7 +45,6 @@ public class ScanSceneAiUiGate : MonoBehaviour
         if (trackedImageManager != null)
             trackedImageManager.trackablesChanged.AddListener(OnTrackedImagesChanged);
 
-        // --- BỔ SUNG: Đăng ký nhận tín hiệu Event từ Fungus ---
         ARFungusDialogueTrigger.OnDialogueStarted += HandleDialogueStarted;
         ARFungusDialogueTrigger.OnDialogueEnded += HandleDialogueEnded;
     }
@@ -56,7 +54,6 @@ public class ScanSceneAiUiGate : MonoBehaviour
         if (trackedImageManager != null)
             trackedImageManager.trackablesChanged.RemoveListener(OnTrackedImagesChanged);
 
-        // Hủy đăng ký Event
         ARFungusDialogueTrigger.OnDialogueStarted -= HandleDialogueStarted;
         ARFungusDialogueTrigger.OnDialogueEnded -= HandleDialogueEnded;
 
@@ -65,19 +62,19 @@ public class ScanSceneAiUiGate : MonoBehaviour
         trackingTargetImages.Clear();
     }
 
-    // Lắng nghe khi hội thoại bắt đầu -> Giấu UI
     private void HandleDialogueStarted(string targetName)
     {
         if (!IsTargetImageName(targetName)) return;
+        StopRevealCoroutine();
         HideAiUi();
     }
 
-    // Lắng nghe khi hội thoại kết thúc -> Hiện UI lên
     private void HandleDialogueEnded(string targetName)
     {
         if (!IsTargetImageName(targetName)) return;
-        if (showOnlyOncePerScene && hasShownUi) return;
+        hasDialoguePlayedForCurrentTarget = true;
 
+        StopRevealCoroutine();
         if (delayAfterDialogueEnds > 0f)
         {
             revealUiCoroutine = StartCoroutine(ShowAiUiDelayed());
@@ -85,7 +82,6 @@ public class ScanSceneAiUiGate : MonoBehaviour
         else
         {
             ShowAiUi();
-            hasShownUi = true;
         }
     }
 
@@ -93,7 +89,6 @@ public class ScanSceneAiUiGate : MonoBehaviour
     {
         yield return new WaitForSeconds(delayAfterDialogueEnds);
         ShowAiUi();
-        hasShownUi = true;
         revealUiCoroutine = null;
     }
 
@@ -119,14 +114,19 @@ public class ScanSceneAiUiGate : MonoBehaviour
             trackingTargetImages.Add(image.trackableId);
             SetCurrentScannedTargetName(image.referenceImage.name);
 
-            // Tìm lại được hình ảnh -> Hủy lệnh ẩn UI
             if (lostTrackingCoroutine != null)
             {
                 StopCoroutine(lostTrackingCoroutine);
                 lostTrackingCoroutine = null;
             }
+
+            // CRITICAL FIX: If dialogue already played previously, restore AI UI on tracking re-acquisition
+            if (hasDialoguePlayedForCurrentTarget && !HasVisibleAiAnswer() && !IsReadyUiActive())
+            {
+                ShowAiUi();
+            }
         }
-        else // TrackingState.Limited hoặc None
+        else
         {
             trackingTargetImages.Remove(image.trackableId);
             if (hideUiWhenTrackingLost && trackingTargetImages.Count == 0)
@@ -146,7 +146,6 @@ public class ScanSceneAiUiGate : MonoBehaviour
 
     private IEnumerator LostTrackingRoutine()
     {
-        // Khoan hồng 0.8s trước khi dọn dẹp UI
         yield return new WaitForSeconds(lostTrackingGracePeriod);
         
         lostTrackingCoroutine = null;
@@ -171,43 +170,56 @@ public class ScanSceneAiUiGate : MonoBehaviour
         SetReadyUiVisible(false);
         SetAnswerUiVisible(false);
 
-        foreach (Text text in textsToClearWhenHidden ?? new Text[0])
+        if (textsToClearWhenHidden != null)
         {
-            if (text != null) text.text = "";
+            for (int i = 0; i < textsToClearWhenHidden.Length; i++)
+            {
+                if (textsToClearWhenHidden[i] != null) textsToClearWhenHidden[i].text = "";
+            }
         }
     }
 
     private void ResetAiUiAndQuestionSession()
     {
-        // --- BỔ SUNG QUAN TRỌNG: Bảo vệ Micro ---
-        // Nếu người dùng đang tương tác với AI (bảng trả lời đang bật / đang ghi âm),
-        // tuyệt đối KHÔNG ĐƯỢC RESET phiên hỏi đáp khi camera bị rớt AR.
-        if (HasVisibleAiAnswer()) return;
+        if (HasVisibleAiAnswer()) return; // Protect active session
 
-        hasShownUi = false;
         HideAiUi();
         ResetAiQuestionControllers();
+    }
+
+    private bool IsReadyUiActive()
+    {
+        GameObject[] objectsToSet = readyUiObjects != null && readyUiObjects.Length > 0 ? readyUiObjects : aiUiObjects;
+        if (objectsToSet != null && objectsToSet.Length > 0 && objectsToSet[0] != null)
+            return objectsToSet[0].activeSelf;
+        return false;
     }
 
     private void SetReadyUiVisible(bool visible)
     {
         GameObject[] objectsToSet = readyUiObjects != null && readyUiObjects.Length > 0 ? readyUiObjects : aiUiObjects;
-        foreach (GameObject uiObject in objectsToSet ?? new GameObject[0])
-            if (uiObject != null) uiObject.SetActive(visible);
+        if (objectsToSet == null) return;
+        for (int i = 0; i < objectsToSet.Length; i++)
+        {
+            if (objectsToSet[i] != null) objectsToSet[i].SetActive(visible);
+        }
     }
 
     private void SetAnswerUiVisible(bool visible)
     {
-        foreach (GameObject uiObject in answerUiObjects ?? new GameObject[0])
-            if (uiObject != null) uiObject.SetActive(visible);
+        if (answerUiObjects == null) return;
+        for (int i = 0; i < answerUiObjects.Length; i++)
+        {
+            if (answerUiObjects[i] != null) answerUiObjects[i].SetActive(visible);
+        }
     }
 
     private bool HasVisibleAiAnswer()
     {
-        CacheAiQuestionControllersIfNeeded();
-        foreach (AiNpcQuestionController controller in aiQuestionControllers)
+        CacheAiQuestionControllers();
+        for (int i = 0; i < aiQuestionControllers.Length; i++)
         {
-            if (controller != null && controller.HasVisibleAnswer) return true;
+            if (aiQuestionControllers[i] != null && aiQuestionControllers[i].HasVisibleAnswer) return true;
         }
         return false;
     }
@@ -219,27 +231,29 @@ public class ScanSceneAiUiGate : MonoBehaviour
         revealUiCoroutine = null;
     }
 
-    private void CacheAiQuestionControllersIfNeeded()
+    private void CacheAiQuestionControllers()
     {
-        if (aiQuestionControllers != null && aiQuestionControllers.Length > 0) return;
-        aiQuestionControllers = FindObjectsOfType<AiNpcQuestionController>(true);
+        if (aiQuestionControllers == null || aiQuestionControllers.Length == 0)
+        {
+            aiQuestionControllers = FindObjectsByType<AiNpcQuestionController>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        }
     }
 
     private void ResetAiQuestionControllers()
     {
-        CacheAiQuestionControllersIfNeeded();
-        foreach (AiNpcQuestionController controller in aiQuestionControllers)
+        CacheAiQuestionControllers();
+        for (int i = 0; i < aiQuestionControllers.Length; i++)
         {
-            if (controller != null) controller.ResetQuestionSession();
+            if (aiQuestionControllers[i] != null) aiQuestionControllers[i].ResetQuestionSession();
         }
     }
 
     private void SetCurrentScannedTargetName(string scannedTargetName)
     {
-        CacheAiQuestionControllersIfNeeded();
-        foreach (AiNpcQuestionController controller in aiQuestionControllers)
+        CacheAiQuestionControllers();
+        for (int i = 0; i < aiQuestionControllers.Length; i++)
         {
-            if (controller != null) controller.SetCurrentScannedTargetName(scannedTargetName);
+            if (aiQuestionControllers[i] != null) aiQuestionControllers[i].SetCurrentScannedTargetName(scannedTargetName);
         }
     }
 }
