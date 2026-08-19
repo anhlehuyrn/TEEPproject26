@@ -9,19 +9,34 @@ const API_KEY = process.env.OPENAI_API_KEY;
 const CHAT_MODEL = process.env.OPENAI_CHAT_MODEL || "gpt-4o-mini"; 
 const TRANSCRIBE_MODEL = process.env.OPENAI_TRANSCRIBE_MODEL || "whisper-1"; 
 const TTS_MODEL = process.env.OPENAI_TTS_MODEL || "tts-1"; 
-const TTS_VOICE = process.env.OPENAI_TTS_VOICE || "alloy";
+const TTS_VOICE = process.env.OPENAI_TTS_VOICE || "shimmer";
 const AUDIO_DIR = path.resolve(".audio");
 const MAX_BODY_BYTES = 24 * 1024 * 1024;
 
 // 1. KHO TRI THỨC VĂN HÓA (Semantic Cultural Knowledge Base)
 const culturalKnowledgeBase = {
-  "DongHo": `Artwork: Dong Ho Folk Painting - The Mice's Wedding (Tranh Đông Hồ - Đám cưới chuột). 
-Semantic Interpretation: The artwork explores the complex social dynamics of ancient Vietnamese feudal society. Do not just describe the animals; it is a sharp political satire. 
-- The Cat represents the greedy, corrupt, and oppressive feudal ruling class.
-- The Bribe (bird and fish) is a metaphor for the bribery required for the poor to live in peace, critiquing corruption in old times.
-- The Groom and The Bride represent the ordinary, powerless peasants and their resilience, optimism, and flexibility. The wedding symbolizes the continuation of life, love, and the ultimate hope for a peaceful and prosperous future for the community.`,
-  "QuanHo": "Artwork: Quan Ho Folk Songs. Semantic Interpretation: Represents the refined, elegant cultural etiquette of Vietnamese people. Focus on the profound community bonding, respect, and emotional depth in their traditional singing.",
-  "LonAmDuong": "Artwork: Yin-Yang Pig. Semantic Interpretation: The Yin-Yang swirl on the pig's body symbolizes the cycle of the universe, fertility, and the peasant's deep desire for a prosperous, harmonious life."
+  // --- VIỆT NAM ---
+  "DongHo": `Artwork: Dong Ho Folk Painting - The Mice's Wedding. Semantic Interpretation: A sharp political satire. The Cat represents the greedy ruling class. The Bribe (bird and fish) critiques corruption. The Mice represent ordinary peasants' resilience and hope for peace.`,
+  
+  "VN_cloth": `Artwork: Vietnamese Ao Tu Than (Four-panel dress). Semantic Interpretation: The four panels symbolize the four parents (birth parents and in-laws). The tied belt represents a faithful bond in love. It highlights the virtue, sacrifice, and grace of ancient Vietnamese women.`,
+  
+  "VN_food": `Artwork: Banh Phu The (Husband and Wife Cake). Semantic Interpretation: The sticky texture symbolizes an unbreakable marriage bond. The square box and round cake inside represent the harmony of Yin and Yang, Heaven and Earth, ensuring a happy and balanced union.`,
+  
+  "VN_fest": `Artwork: Dong Ky Firecracker Festival. Semantic Interpretation: A vibrant celebration honoring the village guardian deity. The loud firecrackers symbolize dispelling evil spirits, awakening the spring, and a powerful collective wish for a prosperous new year.`,
+
+  // --- ĐÀI LOAN ---
+  "TW_cloth": `Artwork: Paiwan Indigenous Costume. Semantic Interpretation: The intricate glass beads and eagle feathers are not just decorations; they signify social status, nobility, and family heirlooms. The embroidery deeply connects the wearer to their ancestors and nature.`,
+  
+  "TW_food": `Artwork: Taiwanese Beef Noodle Soup. Semantic Interpretation: More than just a dish, it represents a historical fusion of cultures in Taiwan. It symbolizes resilience, agricultural transition, and the comforting warmth of Taiwanese hospitality.`,
+  
+  "TW_fest": `Artwork: Taiwan Lantern Festival. Semantic Interpretation: Releasing sky lanterns symbolizes letting go of the past year's burdens and illuminating the path forward with new hopes, dreams, and prayers for peace.`,
+
+  // --- KERALA (ẤN ĐỘ) ---
+  "KL_cloth": `Artwork: Kerala Kasavu Saree. Semantic Interpretation: The pristine white color symbolizes purity and elegance, while the golden border (Zari) represents prosperity. It reflects the deeply rooted simplicity, grace, and spiritual devotion of Malayali culture.`,
+  
+  "KL_food": `Artwork: Kerala Sadya. Semantic Interpretation: A grand feast served on a banana leaf featuring all six Ayurvedic tastes. Sitting on the floor to eat together symbolizes absolute equality, humility, and the sharing of nature's abundance.`,
+  
+  "KL_fest": `Artwork: Onam Festival. Semantic Interpretation: Celebrates the annual return of the mythical King Mahabali. It represents an ideal, utopian society where everyone is equal, prosperous, and happy, completely devoid of caste or class discrimination.`
 };
 
 // 2. PROMPT HỆ THỐNG CƠ BẢN (Cultural Mediator Persona)

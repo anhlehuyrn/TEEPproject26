@@ -432,6 +432,10 @@ public class AiNpcQuestionController : MonoBehaviour
 
                     answerAudioSource.clip = clip;
                     answerAudioSource.Play();
+
+                    // --- THÊM 2 DÒNG NÀY VÀO ĐỂ BẬT MẤP MÁY MÔI ---
+                    if (lipSyncCoroutine != null) StopCoroutine(lipSyncCoroutine);
+                    lipSyncCoroutine = StartCoroutine(HandleNpcLipSync());
                 }
             }
         }
@@ -570,6 +574,19 @@ public class AiNpcQuestionController : MonoBehaviour
             answerAudioSource.Stop(); 
             answerAudioSource.clip = null; 
         } 
+        
+        if (lipSyncCoroutine != null) 
+        {
+            StopCoroutine(lipSyncCoroutine);
+            lipSyncCoroutine = null;
+            
+            Animator[] animators = UnityEngine.Object.FindObjectsByType<Animator>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            foreach (var anim in animators)
+            {
+                // ĐỔI TÊN THÀNH "Talk" TẠI ĐÂY NỮA
+                if (anim.GetComponentInParent<Canvas>() == null) anim.SetBool("Talk", false);
+            }
+        }
     }
     
     private void ShowAnswerPanels() 
@@ -738,6 +755,40 @@ public class AiNpcQuestionController : MonoBehaviour
     { 
         return baseUrl.TrimEnd('/') + "/" + path.TrimStart('/'); 
     }
+
+    private Coroutine lipSyncCoroutine;
+
+    private IEnumerator HandleNpcLipSync()
+    {
+        Animator[] animators = UnityEngine.Object.FindObjectsByType<Animator>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        Animator npcAnimator = null;
+        
+        foreach (var anim in animators)
+        {
+            if (anim.GetComponentInParent<Canvas>() == null)
+            {
+                npcAnimator = anim;
+                break;
+            }
+        }
+
+        // ĐỔI TÊN THÀNH "Talk" CHO ĐÚNG VỚI ẢNH CỦA BẠN
+        if (npcAnimator != null) 
+        {
+            npcAnimator.SetBool("Talk", true); 
+        }
+
+        while (answerAudioSource != null && answerAudioSource.isPlaying)
+        {
+            yield return null;
+        }
+
+        if (npcAnimator != null) 
+        {
+            npcAnimator.SetBool("Talk", false);
+        }
+    }
+
 
     [Serializable] private class AskRequest { public string audioBase64; public string mimeType; public string npcName; public string targetName; public string context; public string imageBase64; public string imageMimeType; }
     [Serializable] private class AskResponse { public string transcript; public string reply; public string audioUrl; public string error; }

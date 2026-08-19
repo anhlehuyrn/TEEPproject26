@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using Fungus;
+using System.Collections; // Dùng để gọi lệnh chờ (Coroutine)
 
 public class LanguageManager : MonoBehaviour
 {
@@ -12,8 +13,13 @@ public class LanguageManager : MonoBehaviour
 
     private readonly string[] languageCodes = { "en", "zh-TW", "ml", "vi" };
 
-    private void Start()
+    // Đổi thành IEnumerator Start để dùng lệnh chờ
+    private IEnumerator Start()
     {
+        // Bí quyết ở đây: Chờ đúng 1 khung hình cho Fungus thức dậy và reset xong
+        // Sau đó chúng ta mới áp đặt ngôn ngữ lên, đảm bảo không bị ghi đè!
+        yield return null; 
+
         int savedLangIndex = PlayerPrefs.GetInt("AppLanguage", 0);
 
         if (languageDropdown != null)
@@ -23,7 +29,7 @@ public class LanguageManager : MonoBehaviour
             languageDropdown.onValueChanged.AddListener(OnLanguageChanged);
         }
 
-        // False: Khi mới mở App, chỉ đổi chữ, KHÔNG reset NPC
+        // Áp dụng ngôn ngữ lưu trong sổ tay
         ApplyLanguage(savedLangIndex, false);
     }
 
@@ -32,7 +38,6 @@ public class LanguageManager : MonoBehaviour
         PlayerPrefs.SetInt("AppLanguage", index);
         PlayerPrefs.Save();
         
-        // True: Khi user chủ động bấm đổi ngôn ngữ, ép NPC reset để nói lại
         ApplyLanguage(index, true);
     }
 
@@ -40,6 +45,7 @@ public class LanguageManager : MonoBehaviour
     {
         if (fungusLocalization != null && index >= 0 && index < languageCodes.Length)
         {
+            // Chỉ dùng hàm SetActiveLanguage được phép của Fungus
             fungusLocalization.SetActiveLanguage(languageCodes[index]);
 
             if (forceResetNPC)

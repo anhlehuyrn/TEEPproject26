@@ -295,8 +295,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: 17}
-  m_SizeDelta: {x: 960, y: 540}
+  m_AnchoredPosition: {x: 0, y: 104}
+  m_SizeDelta: {x: 960, y: 470}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!328 &161355559
 VideoPlayer:
@@ -789,43 +789,43 @@ MonoBehaviour:
   imageDialogues:
   - imageName: DongHo
     blockName: DongHoIntro
-    playOnlyOnce: 0
+    playOnlyOnce: 1
     hasPlayed: 0
   - imageName: VN_cloth
     blockName: VN_clothIntro
-    playOnlyOnce: 0
+    playOnlyOnce: 1
     hasPlayed: 0
   - imageName: VN_food
     blockName: VN_foodIntro
-    playOnlyOnce: 0
+    playOnlyOnce: 1
     hasPlayed: 0
   - imageName: VN_fest
     blockName: VN_festIntro
-    playOnlyOnce: 0
+    playOnlyOnce: 1
     hasPlayed: 0
   - imageName: TW_fest
     blockName: TW_festIntro
-    playOnlyOnce: 0
+    playOnlyOnce: 1
     hasPlayed: 0
   - imageName: TW_food
     blockName: TW_foodIntro
-    playOnlyOnce: 0
+    playOnlyOnce: 1
     hasPlayed: 0
   - imageName: TW_cloth
     blockName: TW_clothIntro
-    playOnlyOnce: 0
+    playOnlyOnce: 1
     hasPlayed: 0
   - imageName: KL_fest
     blockName: KL_festIntro
-    playOnlyOnce: 0
+    playOnlyOnce: 1
     hasPlayed: 0
   - imageName: KL_food
     blockName: KL_foodIntro
-    playOnlyOnce: 0
+    playOnlyOnce: 1
     hasPlayed: 0
   - imageName: KL_cloth
     blockName: KL_clothIntro
-    playOnlyOnce: 0
+    playOnlyOnce: 1
     hasPlayed: 0
   stopDialogueWhenTrackingLost: 1
   hideSayDialogWhenTrackingLost: 1
@@ -1640,7 +1640,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 0, y: -2}
+  m_AnchoredPosition: {x: 0, y: 1}
   m_SizeDelta: {x: 100, y: 100}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1073313255
@@ -4032,7 +4032,7 @@ RectTransform:
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 672, y: 69}
-  m_SizeDelta: {x: 70, y: 70}
+  m_SizeDelta: {x: 65, y: 65}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &2010844430
 MonoBehaviour:
