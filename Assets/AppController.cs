@@ -108,18 +108,9 @@ public class AppController : MonoBehaviour
 
         if (languageDropdown != null)
         {
-            languageDropdown.onValueChanged.RemoveAllListeners();
-            languageDropdown.onValueChanged.AddListener(delegate { 
-                // Lưu các cấu hình vào PlayerPrefs
-                PlayerPrefs.SetInt("SavedLanguage", languageDropdown.value);
-                PlayerPrefs.SetInt("SelectedLanguageIndex", languageDropdown.value);
-                
-                // Gọi Save 1 lần duy nhất ở cuối để ghi tất cả dữ liệu
-                PlayerPrefs.Save();
-                
-                // Cập nhật lại giao diện
-                UpdateUI(); 
-            });
+            // Chỉ tháo/lắp đúng "nhân viên" của mình, không đụng chạm ai khác
+            languageDropdown.onValueChanged.RemoveListener(OnDropdownLanguageChanged);
+            languageDropdown.onValueChanged.AddListener(OnDropdownLanguageChanged);
         }
     }
 
@@ -362,7 +353,7 @@ public class AppController : MonoBehaviour
     {
         if (languageDropdown == null) return;
 
-        int savedValue = PlayerPrefs.GetInt("SavedLanguage", 0);
+        int savedValue = PlayerPrefs.GetInt("AppLanguage", 0);
         int selectedValue = Mathf.Clamp(savedValue, 0, LanguageOptions.Length - 1);
         
         languageDropdown.options.Clear();
@@ -396,7 +387,7 @@ public class AppController : MonoBehaviour
 
     private Language GetSelectedLanguage()
     {
-        int savedValue = PlayerPrefs.GetInt("SavedLanguage", 0);
+        int savedValue = PlayerPrefs.GetInt("AppLanguage", 0);
         if (languageDropdown != null)
         {
             savedValue = languageDropdown.value;
@@ -635,7 +626,7 @@ public class AppController : MonoBehaviour
                 {
                     return Pick(language, 
                         "台灣，福爾摩沙，這片土地擁有壯麗的峽谷、熙熙攘攘的夜市和深厚的文化傳統，令人驚嘆的自然景觀與充滿活力的都市生活在此交會。",
-                        "മനോഹരമായ ദ്വീപായ തായ്‌വാൻ, അതിശയകരമായ മലയിടുക്കുകളുടെയും തിരക്കേറിയ രാത്രി വിപണികളുടെയും നാടാണ്.",
+                        "മനോഹരമായ ദ്വീപായ തായ്‌വാൻ, അതിശയകരമായ മലയിടുക്കുകളുടെയും രാത്രി വിപണികളുടെയും നാടാണ്.",
                         "Đài Loan, hòn đảo Formosa xinh đẹp, là vùng đất của những hẻm núi hùng vĩ, những khu chợ đêm sầm uất và truyền thống văn hóa lâu đời, nơi cảnh quan thiên nhiên ngoạn mục giao thoa cùng nhịp sống đô thị sôi động.");
                 }
                 if (normKey.StartsWith("Vietnam is a country") || normKey.StartsWith("Vietnam is"))
@@ -669,5 +660,13 @@ public class AppController : MonoBehaviour
             default:
                 return string.Empty;
         }
+    }
+
+    private void OnDropdownLanguageChanged(int index)
+    {
+        PlayerPrefs.SetInt("AppLanguage", index);
+        PlayerPrefs.SetInt("SelectedLanguageIndex", index);
+        PlayerPrefs.Save();
+        UpdateUI(); 
     }
 }

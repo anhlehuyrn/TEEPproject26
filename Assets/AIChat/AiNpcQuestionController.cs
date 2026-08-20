@@ -8,7 +8,7 @@ using UnityEngine.Networking;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 using UnityEngine.XR.ARSubsystems;
-using UnityEngine.Video; // Thư viện Video
+using UnityEngine.Video; 
 
 public class AiNpcQuestionController : MonoBehaviour
 {
@@ -63,7 +63,6 @@ public class AiNpcQuestionController : MonoBehaviour
     [Header("Spawner Reference")]
     [SerializeField] private ARFloatingItemSpawner floatingItemSpawner;
 
-    // --- KHU VỰC VIDEO EXPLORE ---
     [Serializable]
     public class TargetVideoMapping
     {
@@ -92,12 +91,46 @@ public class AiNpcQuestionController : MonoBehaviour
     private ScrollRect answerScrollRect;
     private RectTransform answerViewportRect;
     private RectTransform answerContentRect;
+    private bool isScrollViewGenerated = false; // Cờ khóa chống sinh rác UI
+
+    // Quản lý luồng (Coroutines) để chống dẫm nhau
+    private Coroutine currentAskRoutine;
+    private Coroutine currentTypewriterRoutine;
+    private Coroutine currentAudioDownloadRoutine;
+    private Coroutine lipSyncCoroutine;
+    
+    private Animator cachedNpcAnimator; // Cache lại Animator để đỡ tốn hiệu năng quét
 
     public bool HasVisibleAnswer => hasVisibleAnswer;
 
+    private void Awake()
+    {
+        if (answerAudioSource == null) answerAudioSource = GetComponent<AudioSource>();
+        ConfigureAnswerText();
+
+        if (askButton != null)
+        {
+            askButtonText = askButton.GetComponentInChildren<Text>();
+            askButtonTmpText = askButton.GetComponentInChildren<TMP_Text>();
+        }
+        if (exploreArtworkButton != null)
+        {
+            exploreArtworkButtonText = exploreArtworkButton.GetComponentInChildren<Text>();
+            exploreArtworkButtonTmpText = exploreArtworkButton.GetComponentInChildren<TMP_Text>();
+        }
+
+        ConfigureButtonText(askButtonText);
+        ConfigureButtonText(askButtonTmpText);
+        ConfigureButtonText(exploreArtworkButtonText);
+        ConfigureButtonText(exploreArtworkButtonTmpText);
+
+        HideAnswerPanels();
+        SetAskButtonLabel("Ask AI");
+        SetExploreArtworkButtonLabel("Explore Artwork");
+    }
+
     public void SetCurrentScannedTargetName(string scannedTargetName)
     {
-        // Khóa mục tiêu khi đang bận
         if (isRecording || isBusy || hasVisibleAnswer || isExploring) return;
 
         if (!string.IsNullOrWhiteSpace(scannedTargetName))
@@ -105,7 +138,6 @@ public class AiNpcQuestionController : MonoBehaviour
             currentScannedTargetName = scannedTargetName;
             UpdateRagContextForTarget(scannedTargetName);
             
-            // --- LƯU TRẠNG THÁI ĐÃ THU THẬP TEM HỘ CHIẾU ---
             PlayerPrefs.SetInt("Stamp_" + scannedTargetName, 1);
             PlayerPrefs.Save();
         }
@@ -114,10 +146,8 @@ public class AiNpcQuestionController : MonoBehaviour
     public void UpdateRagContextForTarget(string scannedTargetName)
     {
         if (string.IsNullOrWhiteSpace(scannedTargetName)) return;
-
         currentScannedTargetName = scannedTargetName;
 
-        // 1. Kiểm tra nếu có dữ liệu trên Inspector thì ưu tiên
         if (targetRagContexts != null && targetRagContexts.Count > 0)
         {
             foreach (TargetRagContext ragCtx in targetRagContexts)
@@ -131,7 +161,6 @@ public class AiNpcQuestionController : MonoBehaviour
             }
         }
 
-        // 2. Nếu Inspector trống, dùng dữ liệu Hardcode này
         switch (scannedTargetName)
         {
             case "DongHo":
@@ -177,26 +206,6 @@ public class AiNpcQuestionController : MonoBehaviour
         }
     }
 
-    private void Awake()
-    {
-        if (answerAudioSource == null) answerAudioSource = GetComponent<AudioSource>();
-        ConfigureAnswerText();
-
-        if (askButtonText == null && askButton != null) askButtonText = askButton.GetComponentInChildren<Text>();
-        if (askButtonTmpText == null && askButton != null) askButtonTmpText = askButton.GetComponentInChildren<TMP_Text>();
-        if (exploreArtworkButtonText == null && exploreArtworkButton != null) exploreArtworkButtonText = exploreArtworkButton.GetComponentInChildren<Text>();
-        if (exploreArtworkButtonTmpText == null && exploreArtworkButton != null) exploreArtworkButtonTmpText = exploreArtworkButton.GetComponentInChildren<TMP_Text>();
-
-        ConfigureButtonText(askButtonText);
-        ConfigureButtonText(askButtonTmpText);
-        ConfigureButtonText(exploreArtworkButtonText);
-        ConfigureButtonText(exploreArtworkButtonTmpText);
-
-        HideAnswerPanels();
-        SetAskButtonLabel("Ask AI");
-        SetExploreArtworkButtonLabel("Explore Artwork");
-    }
-
     public void ToggleRecording()
     {
         if (isBusy || isExploring) return;
@@ -236,7 +245,6 @@ public class AiNpcQuestionController : MonoBehaviour
         SetExploreArtworkButtonEnabled(false);
     }
 
-    // --- BẢN VÁ LỖI BỘ NHỚ AUDIO CỦA ANTIGRAVITY ---
     public void StopRecordingAndAsk()
     {
         if (!isRecording || recordingClip == null) return;
@@ -251,19 +259,18 @@ public class AiNpcQuestionController : MonoBehaviour
             return;
         }
 
-        // Chuyển đổi thẳng ra byte, KHÔNG sinh ra AudioClip rác gây tốn RAM
         byte[] wavBytes = WavUtility.FromAudioClipTrimmed(recordingClip, samplePosition);
         
-        // Hủy clip ghi âm ngay lập tức
         Destroy(recordingClip);
         recordingClip = null;
 
         SetAskButtonLabel("Sending...");
         SetExploreArtworkButtonEnabled(false);
-        StartCoroutine(SendQuestionRoutine(wavBytes));
+        
+        if (currentAskRoutine != null) StopCoroutine(currentAskRoutine);
+        currentAskRoutine = StartCoroutine(SendQuestionRoutine(wavBytes));
     }
 
-    // --- BẬT TẮT VIDEO ---
     public void ToggleExploreArtwork()
     {
         if (isBusy || isRecording) return;
@@ -314,7 +321,9 @@ public class AiNpcQuestionController : MonoBehaviour
 
     public void ResetQuestionSession()
     {
-        StopAllCoroutines();
+        if (currentAskRoutine != null) StopCoroutine(currentAskRoutine);
+        if (currentTypewriterRoutine != null) StopCoroutine(currentTypewriterRoutine);
+        
         if (isRecording) Microphone.End(null);
 
         isRecording = false;
@@ -322,10 +331,7 @@ public class AiNpcQuestionController : MonoBehaviour
         isExploring = false;
         recordingClip = null;
 
-        StopAnswerAudio();
-        if (answerText != null) answerText.text = "";
-        
-        HideAnswerPanels();
+        ClearCurrentAnswer();
         
         if (videoPlayer != null) videoPlayer.Stop();
         if (videoPanel != null) videoPanel.SetActive(false);
@@ -381,13 +387,17 @@ public class AiNpcQuestionController : MonoBehaviour
             SetStatus("AI is replying...");
 
             if (!string.IsNullOrEmpty(response.audioUrl))
-                StartCoroutine(DownloadAndPlayAudio(CombineUrl(serverBaseUrl, response.audioUrl)));
+            {
+                if (currentAudioDownloadRoutine != null) StopCoroutine(currentAudioDownloadRoutine);
+                currentAudioDownloadRoutine = StartCoroutine(DownloadAndPlayAudio(CombineUrl(serverBaseUrl, response.audioUrl)));
+            }
 
             if (answerText != null)
             {
                 ConfigureAnswerText();
                 string prefixText = "<b>User:</b>   " + response.transcript + "\n\n<b>AI:</b>   ";
-                yield return StartCoroutine(TypewriterAnswer(prefixText, response.reply));
+                if (currentTypewriterRoutine != null) StopCoroutine(currentTypewriterRoutine);
+                currentTypewriterRoutine = StartCoroutine(TypewriterAnswer(prefixText, response.reply));
             }
         }
         
@@ -410,7 +420,6 @@ public class AiNpcQuestionController : MonoBehaviour
         }
     }
 
-    // --- BẢN VÁ LỖI XÓA RÁC AUDIO CỦA ANTIGRAVITY ---
     private IEnumerator DownloadAndPlayAudio(string audioUrl)
     {
         using (UnityWebRequest audioRequest = UnityWebRequestMultimedia.GetAudioClip(audioUrl, AudioType.MPEG))
@@ -421,7 +430,6 @@ public class AiNpcQuestionController : MonoBehaviour
                 AudioClip clip = DownloadHandlerAudioClip.GetContent(audioRequest);
                 if (answerAudioSource != null && clip != null)
                 {
-                    // CRITICAL FIX: Dọn dẹp clip âm thanh cũ khỏi bộ nhớ RAM
                     if (answerAudioSource.clip != null)
                     {
                         AudioClip oldClip = answerAudioSource.clip;
@@ -433,7 +441,6 @@ public class AiNpcQuestionController : MonoBehaviour
                     answerAudioSource.clip = clip;
                     answerAudioSource.Play();
 
-                    // --- THÊM 2 DÒNG NÀY VÀO ĐỂ BẬT MẤP MÁY MÔI ---
                     if (lipSyncCoroutine != null) StopCoroutine(lipSyncCoroutine);
                     lipSyncCoroutine = StartCoroutine(HandleNpcLipSync());
                 }
@@ -569,6 +576,12 @@ public class AiNpcQuestionController : MonoBehaviour
     
     public void StopAnswerAudio() 
     { 
+        if (currentAudioDownloadRoutine != null)
+        {
+            StopCoroutine(currentAudioDownloadRoutine);
+            currentAudioDownloadRoutine = null;
+        }
+
         if (answerAudioSource != null) 
         { 
             answerAudioSource.Stop(); 
@@ -580,11 +593,18 @@ public class AiNpcQuestionController : MonoBehaviour
             StopCoroutine(lipSyncCoroutine);
             lipSyncCoroutine = null;
             
-            Animator[] animators = UnityEngine.Object.FindObjectsByType<Animator>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-            foreach (var anim in animators)
+            if (cachedNpcAnimator != null)
             {
-                // ĐỔI TÊN THÀNH "Talk" TẠI ĐÂY NỮA
-                if (anim.GetComponentInParent<Canvas>() == null) anim.SetBool("Talk", false);
+                cachedNpcAnimator.SetBool("Talk", false);
+            }
+            else
+            {
+                // Fallback nếu chưa cache được
+                Animator[] animators = UnityEngine.Object.FindObjectsByType<Animator>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+                foreach (var anim in animators)
+                {
+                    if (anim.GetComponentInParent<Canvas>() == null) anim.SetBool("Talk", false);
+                }
             }
         }
     }
@@ -617,12 +637,14 @@ public class AiNpcQuestionController : MonoBehaviour
     private void SetupAnswerScrollView()
     {
         if (!makeAnswerTextScrollable || answerText == null || answerTextRect == null) return;
+        if (isScrollViewGenerated) return; // Khóa chống tạo rác UI nhiều lần
 
         answerScrollRect = answerText.GetComponentInParent<ScrollRect>();
         if (answerScrollRect != null)
         {
             answerViewportRect = answerScrollRect.viewport != null ? answerScrollRect.viewport : answerScrollRect.GetComponent<RectTransform>();
             answerContentRect = answerScrollRect.content != null ? answerScrollRect.content : answerTextRect;
+            isScrollViewGenerated = true;
             return;
         }
 
@@ -675,6 +697,7 @@ public class AiNpcQuestionController : MonoBehaviour
         answerScrollRect.verticalScrollbar = verticalScrollbar;
         answerScrollRect.verticalScrollbarVisibility = ScrollRect.ScrollbarVisibility.Permanent;
 
+        isScrollViewGenerated = true;
         UpdateAnswerTextLayout();
     }
 
@@ -756,26 +779,24 @@ public class AiNpcQuestionController : MonoBehaviour
         return baseUrl.TrimEnd('/') + "/" + path.TrimStart('/'); 
     }
 
-    private Coroutine lipSyncCoroutine;
-
     private IEnumerator HandleNpcLipSync()
     {
-        Animator[] animators = UnityEngine.Object.FindObjectsByType<Animator>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-        Animator npcAnimator = null;
-        
-        foreach (var anim in animators)
+        if (cachedNpcAnimator == null)
         {
-            if (anim.GetComponentInParent<Canvas>() == null)
+            Animator[] animators = UnityEngine.Object.FindObjectsByType<Animator>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+            foreach (var anim in animators)
             {
-                npcAnimator = anim;
-                break;
+                if (anim.GetComponentInParent<Canvas>() == null)
+                {
+                    cachedNpcAnimator = anim;
+                    break;
+                }
             }
         }
 
-        // ĐỔI TÊN THÀNH "Talk" CHO ĐÚNG VỚI ẢNH CỦA BẠN
-        if (npcAnimator != null) 
+        if (cachedNpcAnimator != null) 
         {
-            npcAnimator.SetBool("Talk", true); 
+            cachedNpcAnimator.SetBool("Talk", true); 
         }
 
         while (answerAudioSource != null && answerAudioSource.isPlaying)
@@ -783,31 +804,32 @@ public class AiNpcQuestionController : MonoBehaviour
             yield return null;
         }
 
-        if (npcAnimator != null) 
+        if (cachedNpcAnimator != null) 
         {
-            npcAnimator.SetBool("Talk", false);
+            cachedNpcAnimator.SetBool("Talk", false);
         }
     }
-
 
     [Serializable] private class AskRequest { public string audioBase64; public string mimeType; public string npcName; public string targetName; public string context; public string imageBase64; public string imageMimeType; }
     [Serializable] private class AskResponse { public string transcript; public string reply; public string audioUrl; public string error; }
 }
 
-// --- THUẬT TOÁN ZERO-ALLOCATION CỦA ANTIGRAVITY ---
 public static class WavUtility
 {
-    public static byte[] FromAudioClipTrimmed(AudioClip clip, int totalSamplesToTake)
+    public static byte[] FromAudioClipTrimmed(AudioClip clip, int samplesRecordedPerChannel)
     {
         int channels = clip.channels;
-        int totalFloats = totalSamplesToTake * channels;
-        float[] samples = new float[totalFloats];
+        // Lấy đúng lượng data thay vì lấy toàn bộ
+        int totalSamples = samplesRecordedPerChannel * channels;
+        if (totalSamples <= 0) return new byte[44];
+
+        float[] samples = new float[totalSamples];
         clip.GetData(samples, 0);
 
-        byte[] wav = new byte[44 + (totalFloats * 2)];
+        byte[] wav = new byte[44 + (totalSamples * 2)];
 
         WriteAscii(wav, 0, "RIFF");
-        WriteInt(wav, 4, 36 + (totalFloats * 2));
+        WriteInt(wav, 4, 36 + (totalSamples * 2));
         WriteAscii(wav, 8, "WAVE");
         WriteAscii(wav, 12, "fmt ");
         WriteInt(wav, 16, 16);
@@ -818,11 +840,10 @@ public static class WavUtility
         WriteShort(wav, 32, (short)(channels * 2));
         WriteShort(wav, 34, 16);
         WriteAscii(wav, 36, "data");
-        WriteInt(wav, 40, totalFloats * 2);
+        WriteInt(wav, 40, totalSamples * 2);
 
-        // Convert PCM directly into output buffer
         int byteIndex = 44;
-        for (int i = 0; i < totalFloats; i++)
+        for (int i = 0; i < totalSamples; i++)
         {
             short sampleVal = (short)(Mathf.Clamp(samples[i], -1f, 1f) * short.MaxValue);
             wav[byteIndex++] = (byte)(sampleVal & 0xFF);

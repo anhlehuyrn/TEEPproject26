@@ -9,6 +9,9 @@ public class PassportManager : MonoBehaviour
     public Image avatarImage;
     public Sprite[] avatarList; 
     public TMP_InputField nameInput; 
+    
+    [Header("Avatar Selection Popup")]
+    public GameObject avatarPopupPanel; // Kéo thả Panel Popup vào đây
 
     [Header("Journey Progress")]
     public Image progressFillBar; 
@@ -23,6 +26,7 @@ public class PassportManager : MonoBehaviour
     {
         LoadUserProfile();
         SyncPassportData();
+        if (avatarPopupPanel != null) avatarPopupPanel.SetActive(false); // Ẩn popup khi mới mở
     }
 
     public void SyncPassportData()
@@ -40,19 +44,13 @@ public class PassportManager : MonoBehaviour
             if (PlayerPrefs.GetInt("Stamp_" + targetName, 0) == 1)
             {
                 unlockedCount++;
-
-                // Accurate Region Calculation based on Prefix (VN, KL, TW, DongHo)
-                if (targetName.StartsWith("VN_") || targetName == "DongHo")
-                    exploredRegions.Add("Vietnam");
-                else if (targetName.StartsWith("KL_"))
-                    exploredRegions.Add("Kerala");
-                else if (targetName.StartsWith("TW_"))
-                    exploredRegions.Add("Taiwan");
+                if (targetName.StartsWith("VN_") || targetName == "DongHo") exploredRegions.Add("Vietnam");
+                else if (targetName.StartsWith("KL_")) exploredRegions.Add("Kerala");
+                else if (targetName.StartsWith("TW_")) exploredRegions.Add("Taiwan");
             }
         }
 
         float progress = (float)unlockedCount / totalStamps;
-        
         if (progressFillBar != null) progressFillBar.fillAmount = progress;
         if (progressPercentageText != null) progressPercentageText.text = Mathf.RoundToInt(progress * 100) + "%";
         if (stampsCollectedText != null) stampsCollectedText.text = unlockedCount.ToString();
@@ -64,8 +62,8 @@ public class PassportManager : MonoBehaviour
         if (nameInput != null)
         {
             nameInput.text = PlayerPrefs.GetString("UserName", "Cultural Explorer");
-            nameInput.onEndEdit.RemoveAllListeners();
-            nameInput.onEndEdit.AddListener(delegate { SaveName(); });
+            nameInput.onEndEdit.RemoveListener(OnNameEditEnded);
+            nameInput.onEndEdit.AddListener(OnNameEditEnded);
         }
 
         if (avatarImage != null && avatarList != null && avatarList.Length > 0)
@@ -74,6 +72,8 @@ public class PassportManager : MonoBehaviour
             avatarImage.sprite = avatarList[savedAvatarIndex];
         }
     }
+
+    private void OnNameEditEnded(string newName) { SaveName(); }
 
     public void SaveName()
     {
@@ -84,13 +84,29 @@ public class PassportManager : MonoBehaviour
         }
     }
 
-    public void CycleAvatar()
-    {
-        if (avatarList == null || avatarList.Length == 0 || avatarImage == null) return;
+    // --- CÁC HÀM MỚI ĐỂ QUẢN LÝ POPUP ---
 
-        int currentIndex = (PlayerPrefs.GetInt("UserAvatar", 0) + 1) % avatarList.Length;
-        avatarImage.sprite = avatarList[currentIndex];
-        PlayerPrefs.SetInt("UserAvatar", currentIndex);
+    // 1. Mở bảng chọn Avatar
+    public void OpenAvatarPopup()
+    {
+        if (avatarPopupPanel != null) avatarPopupPanel.SetActive(true);
+    }
+
+    // 2. Đóng bảng chọn Avatar
+    public void CloseAvatarPopup()
+    {
+        if (avatarPopupPanel != null) avatarPopupPanel.SetActive(false);
+    }
+
+    // 3. Hàm gán cho 12 nút bấm con giáp
+    public void SelectAvatar(int index)
+    {
+        if (avatarList == null || index < 0 || index >= avatarList.Length || avatarImage == null) return;
+
+        // Đổi hình, lưu bộ nhớ và tự động đóng Popup
+        avatarImage.sprite = avatarList[index];
+        PlayerPrefs.SetInt("UserAvatar", index);
         PlayerPrefs.Save();
+        CloseAvatarPopup();
     }
 }

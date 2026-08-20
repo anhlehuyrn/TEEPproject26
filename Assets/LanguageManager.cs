@@ -24,7 +24,8 @@ public class LanguageManager : MonoBehaviour
 
         if (languageDropdown != null)
         {
-            languageDropdown.onValueChanged.RemoveAllListeners();
+            languageDropdown.onValueChanged.RemoveListener(OnLanguageChanged);
+            languageDropdown.onValueChanged.AddListener(OnLanguageChanged);
             languageDropdown.value = savedLangIndex;
             languageDropdown.onValueChanged.AddListener(OnLanguageChanged);
         }

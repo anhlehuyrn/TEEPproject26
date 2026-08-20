@@ -52,7 +52,7 @@ public class BottomNavManager : MonoBehaviour
         if (passportPanel != null) passportPanel.SetActive(false);
         if (avatarHA != null) avatarHA.SetActive(false);
 
-        // 3. (BỔ SUNG QUAN TRỌNG) Ẩn tất cả các trang Scroll Page để làm sạch màn hình
+        // 3. Ẩn tất cả các trang Scroll Page để làm sạch màn hình
         if (scrollPageTaiwan != null) scrollPageTaiwan.SetActive(false);
         if (scrollPageVietnam != null) scrollPageVietnam.SetActive(false);
         if (scrollPageKerala != null) scrollPageKerala.SetActive(false);
@@ -62,14 +62,25 @@ public class BottomNavManager : MonoBehaviour
         {
             case 0:
                 if (homeText != null) homeText.color = activeColor;
+                
+                // --- BẢN VÁ LỖI XUNG ĐỘT DROPDOWN ---
+                // Reset dropdown Location về index 0 ("All") trước khi bật HomePanel
+                AppController appCtrl = FindObjectOfType<AppController>(true);
+                if (appCtrl != null && appCtrl.locationDropdown != null)
+                {
+                    appCtrl.locationDropdown.value = 0;
+                }
+                
                 if (homePanel != null) homePanel.SetActive(true);
                 break;
+
             case 1:
                 if (exploreText != null) exploreText.color = activeColor;
                 if (explorePanel != null) explorePanel.SetActive(true);
                 // Mở tab Explore thì bật lại Avatar để nó chào hỏi
                 if (avatarHA != null) avatarHA.SetActive(true); 
                 break;
+
             case 2:
                 if (passportText != null) passportText.color = activeColor;
                 if (passportPanel != null) passportPanel.SetActive(true);
