@@ -55,6 +55,7 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\ARFloatingItemSpawner.cs" />
     <Compile Include="Assets\Scripts\ScanSceneAiUiGate.cs" />
+    <Compile Include="Assets\LocalizedAudioManager.cs" />
     <Compile Include="Assets\MultilingualAvatarAudio.cs" />
     <Compile Include="Assets\Scripts\AvatarLightFollower.cs" />
     <Compile Include="Assets\AIContextSwitcher.cs" />
@@ -79,6 +80,7 @@
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF SSD.shader" />
     <None Include="Assets\TextMesh Pro\Shaders\SDFFunctions.hlsl" />
     <None Include="Assets\TextMesh Pro\Shaders\TMP_SDF-Mobile SSD.shader" />
+    <None Include="Assets\Resources\Context voice.txt" />
     <None Include="Assets\fungus-master\ProjectSettings\ProjectVersion.txt" />
     <None Include="Assets\TextMesh Pro\Fonts\LiberationSans - OFL.txt" />
     <None Include="Assets\Hovl Studio\Magic effects pack\Demo scene\Readme.txt" />
