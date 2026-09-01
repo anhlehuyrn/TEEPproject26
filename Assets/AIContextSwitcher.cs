@@ -55,7 +55,7 @@ public class AIContextSwitcher : MonoBehaviour
         {
             languageDropdown.onValueChanged.AddListener(delegate { 
                 // Ghi nhớ ngôn ngữ đã chọn để đồng bộ các trang
-                PlayerPrefs.SetInt("SavedLanguage", languageDropdown.value);
+                PlayerPrefs.SetInt("AppLanguage", languageDropdown.value);
                 PlayerPrefs.Save();
                 UpdateUI(); 
             });
@@ -197,7 +197,7 @@ public class AIContextSwitcher : MonoBehaviour
         if (languageDropdown == null) return;
 
         // Đọc ngôn ngữ từ bộ nhớ thiết bị để Đồng Bộ giữa các màn hình
-        int savedValue = PlayerPrefs.GetInt("SavedLanguage", 0);
+        int savedValue = PlayerPrefs.GetInt("AppLanguage", 0);
         int selectedValue = Mathf.Clamp(savedValue, 0, LanguageOptions.Length - 1);
         languageDropdown.options.Clear();
 
