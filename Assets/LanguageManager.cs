@@ -1,7 +1,7 @@
 using UnityEngine;
 using TMPro;
 using Fungus;
-using System.Collections; // Dùng để gọi lệnh chờ (Coroutine)
+using System.Collections;
 
 public class LanguageManager : MonoBehaviour
 {
@@ -13,24 +13,22 @@ public class LanguageManager : MonoBehaviour
 
     private readonly string[] languageCodes = { "en", "zh-TW", "ml", "vi" };
 
-    // Đổi thành IEnumerator Start để dùng lệnh chờ
     private IEnumerator Start()
     {
-        // Bí quyết ở đây: Chờ đúng 1 khung hình cho Fungus thức dậy và reset xong
-        // Sau đó chúng ta mới áp đặt ngôn ngữ lên, đảm bảo không bị ghi đè!
+        // Chờ 1 khung hình để Fungus khởi tạo xong
         yield return null; 
 
         int savedLangIndex = PlayerPrefs.GetInt("AppLanguage", 0);
 
         if (languageDropdown != null)
         {
+            // Bịt tai Dropdown -> Gán giá trị -> Mở lại tai (tránh gọi nhầm sự kiện)
             languageDropdown.onValueChanged.RemoveListener(OnLanguageChanged);
-            languageDropdown.onValueChanged.AddListener(OnLanguageChanged);
             languageDropdown.value = savedLangIndex;
             languageDropdown.onValueChanged.AddListener(OnLanguageChanged);
         }
 
-        // Áp dụng ngôn ngữ lưu trong sổ tay
+        // Áp dụng ngôn ngữ (gọi trực tiếp hàm trong cùng file)
         ApplyLanguage(savedLangIndex, false);
     }
 
@@ -42,11 +40,11 @@ public class LanguageManager : MonoBehaviour
         ApplyLanguage(index, true);
     }
 
-    private void ApplyLanguage(int index, bool forceResetNPC)
+    // Đổi thành public để ARFungusDialogueTrigger có thể gọi
+    public void ApplyLanguage(int index, bool forceResetNPC)
     {
         if (fungusLocalization != null && index >= 0 && index < languageCodes.Length)
         {
-            // Chỉ dùng hàm SetActiveLanguage được phép của Fungus
             fungusLocalization.SetActiveLanguage(languageCodes[index]);
 
             if (forceResetNPC)
@@ -58,5 +56,12 @@ public class LanguageManager : MonoBehaviour
                 }
             }
         }
+    }
+
+    // Hàm an toàn dành riêng cho việc đánh thức lại ngôn ngữ sau khi mất tracking
+    public void RefreshCurrentLanguage()
+    {
+        int savedLangIndex = PlayerPrefs.GetInt("AppLanguage", 0);
+        ApplyLanguage(savedLangIndex, false);
     }
 }

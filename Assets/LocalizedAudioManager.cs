@@ -11,7 +11,7 @@ public class LocalizedAudioManager : MonoBehaviour
     public void PlayVoice(string baseFileName)
     {
         // Lấy ngôn ngữ hiện tại đang chọn (Đảm bảo key "AppLanguage" khớp với hệ thống của bạn)
-        int langIndex = PlayerPrefs.GetInt("SavedLanguage", 0);
+        int langIndex = PlayerPrefs.GetInt("AppLanguage", 0);
         langIndex = Mathf.Clamp(langIndex, 0, langPrefixes.Length - 1);
         
         // Tự động ghép tiền tố với tên gốc (Ví dụ: "vn" + "VN_food" = "vnVN_food")

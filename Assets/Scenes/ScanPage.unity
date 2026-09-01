@@ -4740,7 +4740,6 @@ GameObject:
   - component: {fileID: 1993532143}
   - component: {fileID: 1993532142}
   - component: {fileID: 1993532144}
-  - component: {fileID: 1993532145}
   m_Layer: 0
   m_Name: AI_NPC_Controller
   m_TagString: Untagged
@@ -4961,29 +4960,6 @@ MonoBehaviour:
     videoClip: {fileID: 32900000, guid: c9bbe80ad896f3f4394079b2247e1ba9, type: 3}
   - targetImageName: KL_cloth
     videoClip: {fileID: 32900000, guid: ca078e9f7a9d2ee4e9adcac743949e05, type: 3}
---- !u!114 &1993532145
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1993532140}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: aefa0d3b342cde84d877df293de886ad, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::AIContextSwitcher
-  jsonFile: {fileID: 0}
-  languageDropdown: {fileID: 0}
-  locationDropdown: {fileID: 0}
-  pageAll: {fileID: 0}
-  pageTaiwan: {fileID: 0}
-  pageKerala: {fileID: 0}
-  pageVietnam: {fileID: 0}
-  narrativeTitle: {fileID: 0}
-  narrativeBody: {fileID: 0}
-  traditionalChineseFont: {fileID: 0}
-  malayalamFont: {fileID: 0}
 --- !u!1 &2010844428
 GameObject:
   m_ObjectHideFlags: 0

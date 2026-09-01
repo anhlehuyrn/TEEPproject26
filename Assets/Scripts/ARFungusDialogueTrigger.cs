@@ -224,6 +224,14 @@ public class ARFungusDialogueTrigger : MonoBehaviour
         for (int i = 0; i < waitFrames; i++) yield return null;
 
         if (flowchart != null) flowchart.Reset(true, false);
+        
+        // Gọi hàm RefreshCurrentLanguage hợp lệ thay vì ép gọi Start()
+        LanguageManager langMgr = FindObjectOfType<LanguageManager>();
+        if (langMgr != null) 
+        {
+            langMgr.RefreshCurrentLanguage(); 
+        }
+        
         if (sayDialog != null)
         {
             sayDialog.Clear();
