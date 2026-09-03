@@ -139,14 +139,42 @@ async function transcribeAudio(audioBuffer, mimeType) {
   return data.text || "";
 }
 
+async function getRagContext(targetName) {
+  if (!targetName) return "Focus on traditional cultural values.";
+
+  const scriptDir = path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1"));
+  const possiblePaths = [
+    path.join(scriptDir, "rag-docs", `${targetName}.md`),
+    path.resolve("Assets", "Server", "rag-docs", `${targetName}.md`),
+    path.resolve("rag-docs", `${targetName}.md`),
+    path.resolve(".", "rag-docs", `${targetName}.md`)
+  ];
+
+  for (const p of possiblePaths) {
+    if (existsSync(p)) {
+      try {
+        const content = await readFile(p, "utf8");
+        if (content && content.trim()) {
+          console.log(`[RAG] Loaded comprehensive document: ${path.basename(p)}`);
+          return content.trim();
+        }
+      } catch (err) {
+        console.warn(`[RAG] Warning reading ${p}:`, err.message);
+      }
+    }
+  }
+
+  return culturalKnowledgeBase[targetName] || "Focus on traditional cultural values.";
+}
+
 async function createNpcReply(transcript, body) {
   const npcName = body.npcName || "NPC Avatar";
   const targetName = body.targetName || "the scanned image";
   const context = body.context || "";
   
-  // 3. TIÊM NGỮ NGHĨA VĂN HÓA VÀO PROMPT
-  const deepCulturalContext = culturalKnowledgeBase[targetName] || "Focus on traditional cultural values.";
-  const dynamicSystemPrompt = `${BASE_SYSTEM_PROMPT}\n\nCurrent Artwork Context: ${deepCulturalContext}`;
+  // 3. TIÊM NGỮ NGHĨA VĂN HÓA VÀO PROMPT (Từ file Markdown RAG hoặc Knowledge Base)
+  const deepCulturalContext = await getRagContext(targetName);
+  const dynamicSystemPrompt = `${BASE_SYSTEM_PROMPT}\n\nComprehensive Cultural Knowledge & Deep Context:\n${deepCulturalContext}`;
 
   const userPrompt = [
     `NPC name: ${npcName}`,

@@ -17,6 +17,13 @@ public class ARImageScanManager : MonoBehaviour
     [SerializeField] private Vector3 avatarScale = Vector3.one;
     [SerializeField] private bool hideWhenTrackingLost = true;
 
+    [Header("Interactive Look-At")]
+    [Tooltip("When enabled, the avatar will always smoothly turn and face the user/camera in AR.")]
+    [SerializeField] private bool faceCamera = true;
+    [Tooltip("Smoothly rotate towards the user instead of snapping instantly.")]
+    [SerializeField] private bool smoothRotation = true;
+    [SerializeField] private float rotationSpeed = 8f;
+
     private const float BaseCameraDistanceMeters = 0.4f;
     private const float MinAutoScaleMultiplier = 0.5f;
     private const float MaxAutoScaleMultiplier = 8f;
@@ -32,6 +39,47 @@ public class ARImageScanManager : MonoBehaviour
         }
 
         arCamera = Camera.main;
+    }
+
+    private void LateUpdate()
+    {
+        if (!faceCamera)
+        {
+            return;
+        }
+
+        if (arCamera == null)
+        {
+            arCamera = Camera.main;
+        }
+
+        if (arCamera == null)
+        {
+            return;
+        }
+
+        foreach (KeyValuePair<TrackableId, GameObject> kvp in spawnedAvatars)
+        {
+            GameObject avatar = kvp.Value;
+            if (avatar != null && avatar.activeInHierarchy)
+            {
+                Vector3 lookDir = arCamera.transform.position - avatar.transform.position;
+                lookDir.y = 0;
+
+                if (lookDir.sqrMagnitude > 0.0001f)
+                {
+                    Quaternion targetRotation = Quaternion.LookRotation(lookDir, Vector3.up);
+                    if (smoothRotation && Application.isPlaying)
+                    {
+                        avatar.transform.rotation = Quaternion.Slerp(avatar.transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
+                    }
+                    else
+                    {
+                        avatar.transform.rotation = targetRotation;
+                    }
+                }
+            }
+        }
     }
 
     private void OnEnable()
@@ -91,10 +139,31 @@ public class ARImageScanManager : MonoBehaviour
         Transform imageTransform = trackedImage.transform;
         float scaleMultiplier = GetTrackedImageScaleMultiplier(trackedImage);
         avatar.transform.position = imageTransform.TransformPoint(avatarLocalOffset * scaleMultiplier);
-        avatar.transform.rotation = Quaternion.AngleAxis(avatarWorldYawOffset, Vector3.up)
-            * imageTransform.rotation
-            * Quaternion.Euler(avatarRotationOffset);
         avatar.transform.localScale = avatarScale * scaleMultiplier;
+
+        if (faceCamera)
+        {
+            if (arCamera == null)
+            {
+                arCamera = Camera.main;
+            }
+
+            if (arCamera != null)
+            {
+                Vector3 lookDir = arCamera.transform.position - avatar.transform.position;
+                lookDir.y = 0;
+                if (lookDir.sqrMagnitude > 0.0001f)
+                {
+                    avatar.transform.rotation = Quaternion.LookRotation(lookDir, Vector3.up);
+                }
+            }
+        }
+        else
+        {
+            avatar.transform.rotation = Quaternion.AngleAxis(avatarWorldYawOffset, Vector3.up)
+                * imageTransform.rotation
+                * Quaternion.Euler(avatarRotationOffset);
+        }
     }
 
     private float GetTrackedImageScaleMultiplier(ARTrackedImage trackedImage)

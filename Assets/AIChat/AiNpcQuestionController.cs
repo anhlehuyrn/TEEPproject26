@@ -592,21 +592,9 @@ public class AiNpcQuestionController : MonoBehaviour
         {
             StopCoroutine(lipSyncCoroutine);
             lipSyncCoroutine = null;
-            
-            if (cachedNpcAnimator != null)
-            {
-                cachedNpcAnimator.SetBool("Talk", false);
-            }
-            else
-            {
-                // Fallback nếu chưa cache được
-                Animator[] animators = UnityEngine.Object.FindObjectsByType<Animator>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-                foreach (var anim in animators)
-                {
-                    if (anim.GetComponentInParent<Canvas>() == null) anim.SetBool("Talk", false);
-                }
-            }
         }
+
+        SetAllAvatarAnimatorsTalk(false);
     }
     
     private void ShowAnswerPanels() 
@@ -779,35 +767,29 @@ public class AiNpcQuestionController : MonoBehaviour
         return baseUrl.TrimEnd('/') + "/" + path.TrimStart('/'); 
     }
 
-    private IEnumerator HandleNpcLipSync()
+    private void SetAllAvatarAnimatorsTalk(bool isTalking)
     {
-        if (cachedNpcAnimator == null)
+        Animator[] animators = UnityEngine.Object.FindObjectsByType<Animator>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        foreach (var anim in animators)
         {
-            Animator[] animators = UnityEngine.Object.FindObjectsByType<Animator>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
-            foreach (var anim in animators)
+            if (anim != null && anim.gameObject.activeInHierarchy && anim.GetComponentInParent<Canvas>() == null)
             {
-                if (anim.GetComponentInParent<Canvas>() == null)
-                {
-                    cachedNpcAnimator = anim;
-                    break;
-                }
+                anim.SetBool("Talk", isTalking);
             }
         }
+    }
 
-        if (cachedNpcAnimator != null) 
-        {
-            cachedNpcAnimator.SetBool("Talk", true); 
-        }
+    private IEnumerator HandleNpcLipSync()
+    {
+        SetAllAvatarAnimatorsTalk(true);
 
         while (answerAudioSource != null && answerAudioSource.isPlaying)
         {
-            yield return null;
+            SetAllAvatarAnimatorsTalk(true);
+            yield return new WaitForSeconds(0.08f);
         }
 
-        if (cachedNpcAnimator != null) 
-        {
-            cachedNpcAnimator.SetBool("Talk", false);
-        }
+        SetAllAvatarAnimatorsTalk(false);
     }
 
     [Serializable] private class AskRequest { public string audioBase64; public string mimeType; public string npcName; public string targetName; public string context; public string imageBase64; public string imageMimeType; }

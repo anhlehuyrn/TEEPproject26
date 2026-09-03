@@ -25,12 +25,24 @@ public class FungusTalkAnimatorSync : MonoBehaviour
             avatarAnimator = GetComponentInChildren<Animator>(true);
         }
 
+        EnsureAnimator();
         CacheWriter();
         SetTalk(false);
     }
 
+    private void EnsureAnimator()
+    {
+        if (avatarAnimator == null)
+        {
+            avatarAnimator = GetComponent<Animator>();
+            if (avatarAnimator == null) avatarAnimator = GetComponentInChildren<Animator>(true);
+            if (avatarAnimator == null) avatarAnimator = GetComponentInParent<Animator>();
+        }
+    }
+
     private void OnEnable()
     {
+        EnsureAnimator();
         WriterSignals.OnWriterState += OnWriterState;
     }
 
@@ -42,6 +54,7 @@ public class FungusTalkAnimatorSync : MonoBehaviour
 
     private void Update()
     {
+        EnsureAnimator();
         CacheWriter();
 
         bool isTalking = IsFungusCurrentlySpeaking();
@@ -80,9 +93,10 @@ public class FungusTalkAnimatorSync : MonoBehaviour
             targetSayDialog = SayDialog.ActiveSayDialog;
         }
 
-        if (targetSayDialog == null)
+        if (targetSayDialog == null || !targetSayDialog.gameObject.activeInHierarchy)
         {
             cachedWriter = null;
+            cachedWriterAudio = null;
             return;
         }
 
@@ -109,43 +123,55 @@ public class FungusTalkAnimatorSync : MonoBehaviour
 
     private bool IsFungusCurrentlySpeaking()
     {
-        if (cachedWriter == null)
+        SayDialog currentDialog = sayDialog != null ? sayDialog : SayDialog.ActiveSayDialog;
+        if (currentDialog == null || !currentDialog.gameObject.activeInHierarchy)
         {
             return false;
         }
 
-        if (talkWhileVoiceOverIsPlaying
-            && cachedWriterAudio != null
-            && cachedWriterAudio.IsPlayingVoiceOver
-            && cachedWriterAudio.GetSecondsRemaining() > 0f)
+        // 1. KIỂM TRA TRỰC TIẾP: Loa trên SayDialog đang phát âm thanh (Voice-over clip)
+        AudioSource[] dialogAudios = currentDialog.GetComponentsInChildren<AudioSource>(true);
+        foreach (AudioSource audio in dialogAudios)
+        {
+            if (audio != null && audio.isPlaying && audio.clip != null)
+            {
+                // Nếu âm thanh đang phát và chưa chạm đến điểm kết thúc
+                if (audio.time < audio.clip.length - 0.05f)
+                {
+                    return true;
+                }
+            }
+        }
+
+        // 2. Kiểm tra WriterAudio (Voice-over còn thời lượng)
+        if (talkWhileVoiceOverIsPlaying && cachedWriterAudio != null)
+        {
+            if (cachedWriterAudio.IsPlayingVoiceOver && cachedWriterAudio.GetSecondsRemaining() > 0.05f)
+            {
+                return true;
+            }
+        }
+
+        // 3. Kiểm tra nếu chữ đang gõ ra màn hình (Typewriter)
+        if (cachedWriter != null && cachedWriter.IsWriting)
         {
             return true;
         }
 
-        if (!cachedWriter.IsWriting)
-        {
-            return false;
-        }
-
-        if (!talkWhileWaitingForInput && cachedWriter.IsWaitingForInput)
-        {
-            return false;
-        }
-
-        return true;
+        return false;
     }
 
     private void SetTalk(bool isTalking)
     {
         lastTalkingState = isTalking;
 
+        if (avatarAnimator == null)
+        {
+            EnsureAnimator();
+        }
+
         if (avatarAnimator == null || string.IsNullOrWhiteSpace(talkBoolName))
         {
-            if (logDebugMessages && avatarAnimator == null)
-            {
-                Debug.LogWarning("Avatar Animator is not assigned, so Talk cannot be updated.", this);
-            }
-
             return;
         }
 

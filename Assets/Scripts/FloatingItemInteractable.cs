@@ -380,6 +380,8 @@ public class FloatingItemInteractable : MonoBehaviour
         }
     }
 
+    private Coroutine avatarTalkSyncRoutine;
+
     private void PlayAudioFromStart()
     {
         if (audioSource == null || audioSource.clip == null)
@@ -395,10 +397,21 @@ public class FloatingItemInteractable : MonoBehaviour
         activeAudioSource = audioSource;
         audioSource.Stop();
         audioSource.Play();
+
+        if (avatarTalkSyncRoutine != null) StopCoroutine(avatarTalkSyncRoutine);
+        avatarTalkSyncRoutine = StartCoroutine(SyncAvatarTalkRoutine());
     }
 
     private void StopAudio()
     {
+        if (avatarTalkSyncRoutine != null)
+        {
+            StopCoroutine(avatarTalkSyncRoutine);
+            avatarTalkSyncRoutine = null;
+        }
+
+        SetAllAvatarAnimatorsTalk(false);
+
         if (audioSource == null)
         {
             return;
@@ -409,6 +422,29 @@ public class FloatingItemInteractable : MonoBehaviour
         if (activeAudioSource == audioSource)
         {
             activeAudioSource = null;
+        }
+    }
+
+    private IEnumerator SyncAvatarTalkRoutine()
+    {
+        SetAllAvatarAnimatorsTalk(true);
+        while (audioSource != null && audioSource.isPlaying)
+        {
+            SetAllAvatarAnimatorsTalk(true);
+            yield return new WaitForSeconds(0.08f);
+        }
+        SetAllAvatarAnimatorsTalk(false);
+    }
+
+    private void SetAllAvatarAnimatorsTalk(bool isTalking)
+    {
+        Animator[] animators = UnityEngine.Object.FindObjectsByType<Animator>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        foreach (var anim in animators)
+        {
+            if (anim != null && anim.gameObject.activeInHierarchy && anim.GetComponentInParent<Canvas>() == null)
+            {
+                anim.SetBool("Talk", isTalking);
+            }
         }
     }
 

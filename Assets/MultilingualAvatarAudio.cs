@@ -46,7 +46,7 @@ public class MultilingualAvatarAudio : MonoBehaviour
         yield return new WaitForSeconds(delayBeforeSpeak);
 
         // 2. Chọn ngôn ngữ
-        int currentLanguageIndex = PlayerPrefs.GetInt("SelectedLanguageIndex", 0);
+        int currentLanguageIndex = PlayerPrefs.GetInt("AppLanguage", PlayerPrefs.GetInt("SelectedLanguageIndex", 0));
         AudioClip clipToPlay = englishClip;
 
         switch (currentLanguageIndex)
