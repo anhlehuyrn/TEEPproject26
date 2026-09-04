@@ -56,6 +56,12 @@ public class LanguageManager : MonoBehaviour
                 }
             }
         }
+
+        GuideIntroController guideController = Object.FindFirstObjectByType<GuideIntroController>();
+        if (guideController != null)
+        {
+            guideController.SetLanguage(index);
+        }
     }
 
     // Hàm an toàn dành riêng cho việc đánh thức lại ngôn ngữ sau khi mất tracking

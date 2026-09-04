@@ -39,6 +39,7 @@ public class AiNpcQuestionController : MonoBehaviour
     [SerializeField] private Text answerText;
     [SerializeField] private Text statusText;
     [SerializeField] private GameObject[] answerPanelObjects;
+    [SerializeField] private GameObject listeningObject;
     
     [Header("Audio Settings")]
     [SerializeField] private AudioSource answerAudioSource;
@@ -108,10 +109,29 @@ public class AiNpcQuestionController : MonoBehaviour
         if (answerAudioSource == null) answerAudioSource = GetComponent<AudioSource>();
         ConfigureAnswerText();
 
+        AutoFindListeningObject();
+
         if (askButton != null)
         {
-            askButtonText = askButton.GetComponentInChildren<Text>();
-            askButtonTmpText = askButton.GetComponentInChildren<TMP_Text>();
+            Text[] texts = askButton.GetComponentsInChildren<Text>(true);
+            foreach (var t in texts)
+            {
+                if (t.gameObject != askButton.gameObject && (listeningObject == null || t.gameObject != listeningObject) && t.name != "Listen" && t.name != "Listening")
+                {
+                    askButtonText = t;
+                    break;
+                }
+            }
+
+            TMP_Text[] tmpTexts = askButton.GetComponentsInChildren<TMP_Text>(true);
+            foreach (var t in tmpTexts)
+            {
+                if (t.gameObject != askButton.gameObject && (listeningObject == null || t.gameObject != listeningObject) && t.name != "Listen" && t.name != "Listening" && t.name != "ExploreButton")
+                {
+                    askButtonTmpText = t;
+                    break;
+                }
+            }
         }
         if (exploreArtworkButton != null)
         {
@@ -125,6 +145,7 @@ public class AiNpcQuestionController : MonoBehaviour
         ConfigureButtonText(exploreArtworkButtonTmpText);
 
         HideAnswerPanels();
+        SetListeningVisible(false);
         SetAskButtonLabel("Ask AI");
         SetExploreArtworkButtonLabel("Explore Artwork");
     }
@@ -232,14 +253,23 @@ public class AiNpcQuestionController : MonoBehaviour
                 timeout -= Time.deltaTime;
                 yield return null;
             }
-            if (!UnityEngine.Android.Permission.HasUserAuthorizedPermission(UnityEngine.Android.Permission.Microphone)) yield break;
+            if (!UnityEngine.Android.Permission.HasUserAuthorizedPermission(UnityEngine.Android.Permission.Microphone))
+            {
+                SetListeningVisible(false);
+                yield break;
+            }
         }
 #endif
-        if (Microphone.devices.Length == 0) yield break;
+        if (Microphone.devices.Length == 0)
+        {
+            SetListeningVisible(false);
+            yield break;
+        }
 
         ClearCurrentAnswer();
         recordingClip = Microphone.Start(null, false, maxRecordingSeconds, sampleRate);
         isRecording = true;
+        SetListeningVisible(true);
         SetStatus("Recording...");
         SetAskButtonLabel("Stop Recording");
         SetExploreArtworkButtonEnabled(false);
@@ -251,6 +281,7 @@ public class AiNpcQuestionController : MonoBehaviour
         int samplePosition = Microphone.GetPosition(null);
         Microphone.End(null);
         isRecording = false;
+        SetListeningVisible(false);
 
         if (samplePosition <= 0)
         {
@@ -331,6 +362,7 @@ public class AiNpcQuestionController : MonoBehaviour
         isExploring = false;
         recordingClip = null;
 
+        SetListeningVisible(false);
         ClearCurrentAnswer();
         
         if (videoPlayer != null) videoPlayer.Stop();
@@ -341,6 +373,49 @@ public class AiNpcQuestionController : MonoBehaviour
         SetExploreArtworkButtonEnabled(true);
         SetAskButtonLabel("Ask AI");
         SetExploreArtworkButtonLabel("Explore Artwork");
+    }
+
+    private void AutoFindListeningObject()
+    {
+        if (listeningObject != null) return;
+
+        if (askButton != null)
+        {
+            Transform listenChild = askButton.transform.Find("Listen");
+            if (listenChild == null) listenChild = askButton.transform.Find("Listening");
+            if (listenChild != null)
+            {
+                listeningObject = listenChild.gameObject;
+                return;
+            }
+        }
+
+        Transform selfListenChild = transform.Find("Listen");
+        if (selfListenChild == null) selfListenChild = transform.Find("Listening");
+        if (selfListenChild != null)
+        {
+            listeningObject = selfListenChild.gameObject;
+            return;
+        }
+
+        GameObject foundListen = GameObject.Find("Listen");
+        if (foundListen != null)
+        {
+            listeningObject = foundListen;
+        }
+    }
+
+    public void SetListeningVisible(bool visible)
+    {
+        if (listeningObject == null)
+        {
+            AutoFindListeningObject();
+        }
+
+        if (listeningObject != null)
+        {
+            listeningObject.SetActive(visible);
+        }
     }
 
     private IEnumerator SendQuestionRoutine(byte[] wavBytes)

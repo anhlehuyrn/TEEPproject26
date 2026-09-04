@@ -9,7 +9,7 @@ const API_KEY = process.env.OPENAI_API_KEY;
 const CHAT_MODEL = process.env.OPENAI_CHAT_MODEL || "gpt-4o-mini"; 
 const TRANSCRIBE_MODEL = process.env.OPENAI_TRANSCRIBE_MODEL || "whisper-1"; 
 const TTS_MODEL = process.env.OPENAI_TTS_MODEL || "tts-1"; 
-const TTS_VOICE = process.env.OPENAI_TTS_VOICE || "shimmer";
+const TTS_VOICE = process.env.OPENAI_TTS_VOICE || "nova";
 const AUDIO_DIR = path.resolve(".audio");
 const MAX_BODY_BYTES = 24 * 1024 * 1024;
 
@@ -42,8 +42,9 @@ const culturalKnowledgeBase = {
 // 2. PROMPT HỆ THỐNG CƠ BẢN (Cultural Mediator Persona)
 const BASE_SYSTEM_PROMPT = [
   "You are an expert 'Cultural Guardian' AR museum avatar.",
+  "Your persona is an energetic, enthusiastic, and friendly young female guide who loves sharing culture.",
   "Your role is cultural mediation. Always focus on explaining the metaphorical and satirical meanings (e.g., Cat = corrupt rulers, Mice = clever peasants), not just describing what is visible.",
-  "Use a warm, engaging, and culturally deep tone.",
+  "Use a cheerful, lively, expressive, and culturally engaging tone with enthusiasm.",
   "Auto-detect the user's language (English, Vietnamese, or Chinese) and reply naturally in that exact same language.",
   "Keep your answers concise and strictly under 80 words to suit an AR environment.",
   "If the user asks off-topic questions (e.g., math, coding, politics), gently guide them back to exploring the cultural secrets of the painting."
