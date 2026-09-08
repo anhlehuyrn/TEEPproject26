@@ -16,7 +16,7 @@ const AUDIO_DIR = path.join(SERVER_DIR, ".audio");
 const RAG_DOCS_DIR = path.join(SERVER_DIR, "rag-docs");
 const MAX_BODY_BYTES = 24 * 1024 * 1024;
 
-// 1. KHO TRI THỨC VĂN HÓA DỰ PHÒNG (NẾU KHÔNG CÓ FILE MARKDOWN RAG)
+// 1. KHO TRI THỨC VĂN HÓA DỰ PHÒNG
 const culturalKnowledgeBase = {
   "DongHo": "Artwork: Dong Ho Folk Painting - The Mice's Wedding. Satirical meaning: Criticizes feudal corruption (the greedy cat receiving bribes of birds/fish) while celebrating the resilience, humor, and hope of common people.",
   "VN_cloth": "Artwork: Vietnamese Ao Tu Than (Four-panel dress). Semantic meaning: Four panels symbolize parents and in-laws; the tied belt represents marital fidelity, elegance, and sacrifice of Vietnamese women.",
@@ -33,10 +33,11 @@ const culturalKnowledgeBase = {
 const systemPrompt = [
   "You are a friendly, enthusiastic AR museum culture avatar.",
   "Your persona is a lively young female guide who loves sharing cultural wisdom.",
-  "Answer student questions clearly, concisely (under 75 words), and accurately.",
+  "Answer student questions clearly, concisely (under 75 words), and engagingly.",
   "Keep answers suitable for a classroom AR learning activity.",
   "Explain the metaphorical, symbolic, and satirical meanings of the cultural elements.",
-  "Do not invent facts not present in the artwork context."
+  "You are fully multilingual in English, Vietnamese (Tiếng Việt), Traditional Chinese (繁體中文), and Malayalam (മലയാളം).",
+  "CRITICAL LANGUAGE RULE: Automatically detect the language used in the student's question. If the student asks in Vietnamese, reply strictly in fluent natural Vietnamese. If the student asks in Malayalam, reply strictly in Malayalam script. If the student asks in Traditional Chinese, reply strictly in Traditional Chinese. If in English, reply in English. Match the student's language 100% naturally."
 ].join(" ");
 
 await mkdir(AUDIO_DIR, { recursive: true });
@@ -62,58 +63,38 @@ server.listen(PORT, "0.0.0.0", () => {
   if (!API_KEY) console.warn("OPENAI_API_KEY is not set. /ask will fail until you set it.");
 });
 
-function normalizeLanguage(value) {
-  const lang = (value || "").toLowerCase();
-  if (lang.includes("ml") || lang.includes("malayalam")) {
-    return { name: "Malayalam", code: "ml", script: "Malayalam (മലയാളം)" };
-  }
-  if (lang.includes("vi") || lang.includes("vietnam")) {
-    return { name: "Vietnamese", code: "vi", script: "Vietnamese (Tiếng Việt)" };
-  }
-  if (lang.includes("zh") || lang.includes("chinese") || lang.includes("taiwan") || lang.includes("tw")) {
-    return { name: "Traditional Chinese", code: "zh", script: "Traditional Chinese (繁體中文)" };
-  }
-  return { name: "English", code: "en", script: "English" };
-}
-
 async function handleAsk(req, res) {
   requireApiKey();
   const body = await readJsonBody(req);
   if (!body.audioBase64) return sendJson(res, 400, { error: "audioBase64 is required" });
 
-  const language = normalizeLanguage(body.language);
-  
-  // 1. Ép STT nghe đúng theo ngôn ngữ đang chọn
+  // 1. Nhận diện giọng nói tự nhiên (Tự động nhận diện tiếng Việt / Malayalam / Trung / Anh)
   const transcript = await transcribeAudio(
     Buffer.from(body.audioBase64, "base64"),
     body.mimeType || "audio/wav",
-    language.code
+    body.language // Truyền gợi ý nếu có, hoặc để trống để tự nhận diện
   );
-  console.log(`[${language.name}] Student transcript:`, transcript || "(empty)");
+  console.log(`Student transcript:`, transcript || "(empty)");
 
-  // 2. Câu trả lời dự phòng khi không nghe rõ âm thanh
-  const fallbackMessages = {
-    "Malayalam": "എനിക്ക് ചോദ്യം വ്യക്തമായി കേൾക്കാനായില്ല. ദയവായി Ask AI വീண்டும் അമർത്തി സംസാരിക്കുക.",
-    "Vietnamese": "Mình chưa nghe rõ câu hỏi của bạn. Bạn hãy bấm Ask AI một lần nữa và nói gần hơn nhé.",
-    "Traditional Chinese": "我沒有清楚聽到問題。請再次點選 Ask AI，並靠近設備說話。",
-    "English": "I could not hear the question clearly. Please tap Ask AI again and speak closer to the tablet."
-  };
-
-  // 3. Tạo câu trả lời ép theo ngôn ngữ đích
+  // 2. Tạo câu trả lời tự động khớp ngôn ngữ
   const reply = transcript.trim()
-    ? await createNpcReply(transcript, body, language)
-    : (fallbackMessages[language.name] || fallbackMessages["English"]);
+    ? await createNpcReply(transcript, body)
+    : "I could not hear the question clearly. Please tap Ask AI again and speak closer to the tablet / Mình chưa nghe rõ, bạn bấm nói lại nhé / എനിക്ക് കേൾക്കാനായില്ല.";
 
-  console.log(`[${language.name}] NPC reply:`, reply);
-  const audioUrl = await synthesizeSpeech(reply, language.name);
+  console.log(`NPC reply:`, reply);
+  const audioUrl = await synthesizeSpeech(reply);
   sendJson(res, 200, { transcript, reply, audioUrl });
 }
 
-async function transcribeAudio(audioBuffer, mimeType, languageCode) {
+async function transcribeAudio(audioBuffer, mimeType, preferredLanguage) {
   const form = new FormData();
   form.append("model", TRANSCRIBE_MODEL);
   form.append("file", new Blob([audioBuffer], { type: mimeType }), "student-question.wav");
-  if (languageCode) form.append("language", languageCode);
+  
+  // Nếu là tiếng Malayalam đặc thù thì ưu tiên mã "ml", còn lại để Whisper tự động phát hiện linh hoạt
+  if (preferredLanguage === "ml" || preferredLanguage === "Malayalam") {
+    form.append("language", "ml");
+  }
 
   const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
     method: "POST",
@@ -140,7 +121,7 @@ async function readArtworkInformation(targetName) {
   return culturalKnowledgeBase[cleanTarget] || "Focus on traditional cultural values and metaphors.";
 }
 
-async function createNpcReply(transcript, body, language) {
+async function createNpcReply(transcript, body) {
   const npcName = body.npcName || "Cultural Guide NPC";
   const targetName = body.targetName || "Culture";
   const context = body.context || "";
@@ -150,10 +131,9 @@ async function createNpcReply(transcript, body, language) {
     `NPC name: ${npcName}`,
     `Current AR target image: ${targetName}`,
     context ? `Lesson context: ${context}` : "",
-    `Selected guide language: ${language.script}.`,
-    `STRICT REQUIREMENT: Reply 100% ENTIRELY in ${language.script}. Use natural, culturally appropriate, and native phrasing. Do not reply in any other language.`,
     "Artwork background knowledge:", artworkInformation,
-    `Student question: ${transcript}`
+    `Student question: ${transcript}`,
+    "INSTRUCTION: Reply in the EXACT SAME LANGUAGE as the student's question (Vietnamese, Malayalam, Traditional Chinese, or English). Make sure the cultural explanation is engaging, accurate, and under 75 words."
   ].filter(Boolean).join("\n");
 
   const userContent = [{ type: "text", text: userPrompt }];
@@ -174,7 +154,7 @@ async function createNpcReply(transcript, body, language) {
     },
     body: JSON.stringify({
       model: CHAT_MODEL,
-      temperature: 0.2,
+      temperature: 0.3,
       messages: [
         { role: "system", content: systemPrompt },
         { role: "user", content: userContent }
@@ -186,7 +166,7 @@ async function createNpcReply(transcript, body, language) {
   return extractResponseText(data).trim();
 }
 
-async function synthesizeSpeech(text, languageName) {
+async function synthesizeSpeech(text) {
   const response = await fetch("https://api.openai.com/v1/audio/speech", {
     method: "POST",
     headers: {
