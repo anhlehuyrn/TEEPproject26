@@ -3,52 +3,40 @@ import { mkdir, writeFile, readFile, stat } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
+import { fileURLToPath } from "node:url";
 
 const PORT = Number(process.env.PORT || 8787);
 const API_KEY = process.env.OPENAI_API_KEY;
-const CHAT_MODEL = process.env.OPENAI_CHAT_MODEL || "gpt-4o-mini"; 
-const TRANSCRIBE_MODEL = process.env.OPENAI_TRANSCRIBE_MODEL || "whisper-1"; 
-const TTS_MODEL = process.env.OPENAI_TTS_MODEL || "tts-1"; 
+const CHAT_MODEL = process.env.OPENAI_CHAT_MODEL || "gpt-4o-mini";
+const TRANSCRIBE_MODEL = process.env.OPENAI_TRANSCRIBE_MODEL || "whisper-1";
+const TTS_MODEL = process.env.OPENAI_TTS_MODEL || "tts-1";
 const TTS_VOICE = process.env.OPENAI_TTS_VOICE || "nova";
-const AUDIO_DIR = path.resolve(".audio");
+const SERVER_DIR = path.dirname(fileURLToPath(import.meta.url));
+const AUDIO_DIR = path.join(SERVER_DIR, ".audio");
+const RAG_DOCS_DIR = path.join(SERVER_DIR, "rag-docs");
 const MAX_BODY_BYTES = 24 * 1024 * 1024;
 
-// 1. KHO TRI THỨC VĂN HÓA (Semantic Cultural Knowledge Base)
+// 1. KHO TRI THỨC VĂN HÓA DỰ PHÒNG (NẾU KHÔNG CÓ FILE MARKDOWN RAG)
 const culturalKnowledgeBase = {
-  // --- VIỆT NAM ---
-  "DongHo": `Artwork: Dong Ho Folk Painting - The Mice's Wedding. Semantic Interpretation: A sharp political satire. The Cat represents the greedy ruling class. The Bribe (bird and fish) critiques corruption. The Mice represent ordinary peasants' resilience and hope for peace.`,
-  
-  "VN_cloth": `Artwork: Vietnamese Ao Tu Than (Four-panel dress). Semantic Interpretation: The four panels symbolize the four parents (birth parents and in-laws). The tied belt represents a faithful bond in love. It highlights the virtue, sacrifice, and grace of ancient Vietnamese women.`,
-  
-  "VN_food": `Artwork: Banh Phu The (Husband and Wife Cake). Semantic Interpretation: The sticky texture symbolizes an unbreakable marriage bond. The square box and round cake inside represent the harmony of Yin and Yang, Heaven and Earth, ensuring a happy and balanced union.`,
-  
-  "VN_fest": `Artwork: Dong Ky Firecracker Festival. Semantic Interpretation: A vibrant celebration honoring the village guardian deity. The loud firecrackers symbolize dispelling evil spirits, awakening the spring, and a powerful collective wish for a prosperous new year.`,
-
-  // --- ĐÀI LOAN ---
-  "TW_cloth": `Artwork: Paiwan Indigenous Costume. Semantic Interpretation: The intricate glass beads and eagle feathers are not just decorations; they signify social status, nobility, and family heirlooms. The embroidery deeply connects the wearer to their ancestors and nature.`,
-  
-  "TW_food": `Artwork: Taiwanese Beef Noodle Soup. Semantic Interpretation: More than just a dish, it represents a historical fusion of cultures in Taiwan. It symbolizes resilience, agricultural transition, and the comforting warmth of Taiwanese hospitality.`,
-  
-  "TW_fest": `Artwork: Taiwan Lantern Festival. Semantic Interpretation: Releasing sky lanterns symbolizes letting go of the past year's burdens and illuminating the path forward with new hopes, dreams, and prayers for peace.`,
-
-  // --- KERALA (ẤN ĐỘ) ---
-  "KL_cloth": `Artwork: Kerala Kasavu Saree. Semantic Interpretation: The pristine white color symbolizes purity and elegance, while the golden border (Zari) represents prosperity. It reflects the deeply rooted simplicity, grace, and spiritual devotion of Malayali culture.`,
-  
-  "KL_food": `Artwork: Kerala Sadya. Semantic Interpretation: A grand feast served on a banana leaf featuring all six Ayurvedic tastes. Sitting on the floor to eat together symbolizes absolute equality, humility, and the sharing of nature's abundance.`,
-  
-  "KL_fest": `Artwork: Onam Festival. Semantic Interpretation: Celebrates the annual return of the mythical King Mahabali. It represents an ideal, utopian society where everyone is equal, prosperous, and happy, completely devoid of caste or class discrimination.`
+  "DongHo": "Artwork: Dong Ho Folk Painting - The Mice's Wedding. Satirical meaning: Criticizes feudal corruption (the greedy cat receiving bribes of birds/fish) while celebrating the resilience, humor, and hope of common people.",
+  "VN_cloth": "Artwork: Vietnamese Ao Tu Than (Four-panel dress). Semantic meaning: Four panels symbolize parents and in-laws; the tied belt represents marital fidelity, elegance, and sacrifice of Vietnamese women.",
+  "VN_food": "Artwork: Banh Phu The (Husband and Wife Cake). Meaning: Sticky texture symbolizes marriage bond; square box and round cake harmonize Yin-Yang, Heaven-Earth.",
+  "VN_fest": "Artwork: Dong Ky Firecracker Festival. Meaning: Honoring village deities, dispelling bad luck, ushering in spring, and wishing for community prosperity.",
+  "TW_cloth": "Artwork: Paiwan Indigenous Costume. Meaning: Intricate glass beads and embroidery symbolize social rank, ancestry connection, and noble status.",
+  "TW_food": "Artwork: Taiwanese Beef Noodle Soup. Meaning: Culinary fusion representing warmth, agricultural transition, and Taiwanese hospitality.",
+  "TW_fest": "Artwork: Taiwan Lantern Festival. Meaning: Releasing glowing lanterns into the night sky to let go of old burdens and make wishes for peace and hope.",
+  "KL_cloth": "Artwork: Kerala Kasavu Saree. Meaning: Pristine white and golden border (Zari) symbolizing purity, prosperity, simplicity, and grace in Malayali heritage.",
+  "KL_food": "Artwork: Kerala Sadya. Meaning: Grand vegetarian feast on a banana leaf with six Ayurvedic tastes, symbolizing unity, equality, and natural abundance.",
+  "KL_fest": "Artwork: Onam Festival. Meaning: Commemorating King Mahabali's return to an egalitarian, prosperous, and joyous golden era with flower carpets (Pookkalam)."
 };
 
-// 2. PROMPT HỆ THỐNG CƠ BẢN (Cultural Mediator Persona)
-const BASE_SYSTEM_PROMPT = [
-  "You are an expert 'Cultural Guardian' AR museum avatar.",
-  "Your persona is an energetic, enthusiastic, and friendly young female guide who loves sharing culture.",
-  "Your role is cultural mediation. Always focus on explaining the metaphorical and satirical meanings.",
-  "Use a cheerful, lively, expressive, and culturally engaging tone with enthusiasm.",
-  "You are fully multilingual and fluent in English, Vietnamese (Tiếng Việt), Traditional Chinese (繁體中文), and Malayalam (മലയാളം).",
-  "Always reply strictly in the requested target language with native phrasing and cultural accuracy.",
-  "Keep your answers concise and strictly under 80 words to suit an AR environment.",
-  "If the user asks off-topic questions (e.g., math, coding, politics), gently guide them back to exploring the cultural secrets of the painting."
+const systemPrompt = [
+  "You are a friendly, enthusiastic AR museum culture avatar.",
+  "Your persona is a lively young female guide who loves sharing cultural wisdom.",
+  "Answer student questions clearly, concisely (under 75 words), and accurately.",
+  "Keep answers suitable for a classroom AR learning activity.",
+  "Explain the metaphorical, symbolic, and satirical meanings of the cultural elements.",
+  "Do not invent facts not present in the artwork context."
 ].join(" ");
 
 await mkdir(AUDIO_DIR, { recursive: true });
@@ -56,30 +44,12 @@ await mkdir(AUDIO_DIR, { recursive: true });
 const server = http.createServer(async (req, res) => {
   try {
     setCorsHeaders(res);
-
-    if (req.method === "OPTIONS") {
-      res.writeHead(204);
-      res.end();
-      return;
-    }
+    if (req.method === "OPTIONS") return res.writeHead(204).end();
 
     const url = new URL(req.url || "/", `http://${req.headers.host}`);
-
-    if (req.method === "GET" && url.pathname === "/health") {
-      sendJson(res, 200, { ok: true });
-      return;
-    }
-
-    if (req.method === "GET" && url.pathname.startsWith("/audio/")) {
-      await serveAudio(url.pathname, res);
-      return;
-    }
-
-    if (req.method === "POST" && url.pathname === "/ask") {
-      await handleAsk(req, res);
-      return;
-    }
-
+    if (req.method === "GET" && url.pathname === "/health") return sendJson(res, 200, { ok: true });
+    if (req.method === "GET" && url.pathname.startsWith("/audio/")) return await serveAudio(url.pathname, res);
+    if (req.method === "POST" && url.pathname === "/ask") return await handleAsk(req, res);
     sendJson(res, 404, { error: "Not found" });
   } catch (error) {
     console.error(error);
@@ -89,137 +59,111 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, "0.0.0.0", () => {
   console.log(`AI NPC proxy running at http://0.0.0.0:${PORT}`);
-  if (!API_KEY) {
-    console.warn("OPENAI_API_KEY is not set. /ask will fail until you set it.");
-  }
+  if (!API_KEY) console.warn("OPENAI_API_KEY is not set. /ask will fail until you set it.");
 });
 
 function normalizeLanguage(value) {
   const lang = (value || "").toLowerCase();
   if (lang.includes("ml") || lang.includes("malayalam")) {
-    return { name: "Malayalam (മലയാളം)", code: "ml" };
+    return { name: "Malayalam", code: "ml", script: "Malayalam (മലയാളം)" };
   }
   if (lang.includes("vi") || lang.includes("vietnam")) {
-    return { name: "Vietnamese (Tiếng Việt)", code: "vi" };
+    return { name: "Vietnamese", code: "vi", script: "Vietnamese (Tiếng Việt)" };
   }
   if (lang.includes("zh") || lang.includes("chinese") || lang.includes("taiwan") || lang.includes("tw")) {
-    return { name: "Traditional Chinese (繁體中文)", code: "zh" };
+    return { name: "Traditional Chinese", code: "zh", script: "Traditional Chinese (繁體中文)" };
   }
-  return { name: "English", code: "en" };
+  return { name: "English", code: "en", script: "English" };
 }
 
 async function handleAsk(req, res) {
   requireApiKey();
-
   const body = await readJsonBody(req);
-  const audioBase64 = body.audioBase64;
-
-  if (!audioBase64) {
-    sendJson(res, 400, { error: "audioBase64 is required" });
-    return;
-  }
+  if (!body.audioBase64) return sendJson(res, 400, { error: "audioBase64 is required" });
 
   const language = normalizeLanguage(body.language);
-  const mimeType = body.mimeType || "audio/wav";
-  const audioBuffer = Buffer.from(audioBase64, "base64");
-  const transcript = await transcribeAudio(audioBuffer, mimeType, language.code);
+  
+  // 1. Ép STT nghe đúng theo ngôn ngữ đang chọn
+  const transcript = await transcribeAudio(
+    Buffer.from(body.audioBase64, "base64"),
+    body.mimeType || "audio/wav",
+    language.code
+  );
   console.log(`[${language.name}] Student transcript:`, transcript || "(empty)");
 
+  // 2. Câu trả lời dự phòng khi không nghe rõ âm thanh
   const fallbackMessages = {
-    "ml": "എനിക്ക് ചോദ്യം വ്യക്തമായി കേൾക്കാനായില്ല. ദയവായി Ask AI വീண்டும் അമർത്തി സംസാരിക്കുക.",
-    "vi": "Mình chưa nghe rõ câu hỏi của bạn. Bạn vui lòng ấn nút Ask AI một lần nữa và nói gần hơn nhé.",
-    "zh": "我沒有清楚聽到問題。請再次點選 Ask AI，並靠近設備說話。",
-    "en": "I could not hear the question clearly. Please tap Ask AI again and speak closer to the device."
+    "Malayalam": "എനിക്ക് ചോദ്യം വ്യക്തമായി കേൾക്കാനായില്ല. ദയവായി Ask AI വീண்டும் അമർത്തി സംസാരിക്കുക.",
+    "Vietnamese": "Mình chưa nghe rõ câu hỏi của bạn. Bạn hãy bấm Ask AI một lần nữa và nói gần hơn nhé.",
+    "Traditional Chinese": "我沒有清楚聽到問題。請再次點選 Ask AI，並靠近設備說話。",
+    "English": "I could not hear the question clearly. Please tap Ask AI again and speak closer to the tablet."
   };
 
+  // 3. Tạo câu trả lời ép theo ngôn ngữ đích
   const reply = transcript.trim()
     ? await createNpcReply(transcript, body, language)
-    : (fallbackMessages[language.code] || fallbackMessages["en"]);
+    : (fallbackMessages[language.name] || fallbackMessages["English"]);
 
   console.log(`[${language.name}] NPC reply:`, reply);
-  const audioUrl = await synthesizeSpeech(reply);
-
-  sendJson(res, 200, {
-    transcript,
-    reply,
-    audioUrl
-  });
+  const audioUrl = await synthesizeSpeech(reply, language.name);
+  sendJson(res, 200, { transcript, reply, audioUrl });
 }
 
 async function transcribeAudio(audioBuffer, mimeType, languageCode) {
   const form = new FormData();
   form.append("model", TRANSCRIBE_MODEL);
   form.append("file", new Blob([audioBuffer], { type: mimeType }), "student-question.wav");
-  if (languageCode) {
-    form.append("language", languageCode);
-  }
+  if (languageCode) form.append("language", languageCode);
 
   const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${API_KEY}`
-    },
+    headers: { Authorization: `Bearer ${API_KEY}` },
     body: form
   });
-
-  const data = await readOpenAiResponse(response);
-  return data.text || "";
+  return (await readOpenAiResponse(response)).text || "";
 }
 
-async function getRagContext(targetName) {
+async function readArtworkInformation(targetName) {
   if (!targetName) return "Focus on traditional cultural values.";
+  const cleanTarget = targetName.trim();
+  const docPath = path.join(RAG_DOCS_DIR, `${cleanTarget}.md`);
 
-  const scriptDir = path.dirname(new URL(import.meta.url).pathname.replace(/^\/([A-Za-z]:)/, "$1"));
-  const possiblePaths = [
-    path.join(scriptDir, "rag-docs", `${targetName}.md`),
-    path.resolve("Assets", "Server", "rag-docs", `${targetName}.md`),
-    path.resolve("rag-docs", `${targetName}.md`),
-    path.resolve(".", "rag-docs", `${targetName}.md`)
-  ];
-
-  for (const p of possiblePaths) {
-    if (existsSync(p)) {
-      try {
-        const content = await readFile(p, "utf8");
-        if (content && content.trim()) {
-          console.log(`[RAG] Loaded comprehensive document: ${path.basename(p)}`);
-          return content.trim();
-        }
-      } catch (err) {
-        console.warn(`[RAG] Warning reading ${p}:`, err.message);
-      }
+  if (existsSync(docPath)) {
+    try {
+      const content = await readFile(docPath, "utf8");
+      if (content && content.trim()) return content.trim();
+    } catch (e) {
+      console.warn(`Could not read ${docPath}:`, e.message);
     }
   }
 
-  return culturalKnowledgeBase[targetName] || "Focus on traditional cultural values.";
+  return culturalKnowledgeBase[cleanTarget] || "Focus on traditional cultural values and metaphors.";
 }
 
 async function createNpcReply(transcript, body, language) {
-  const npcName = body.npcName || "NPC Avatar";
-  const targetName = body.targetName || "the scanned image";
+  const npcName = body.npcName || "Cultural Guide NPC";
+  const targetName = body.targetName || "Culture";
   const context = body.context || "";
-  const languageName = language?.name || "English";
-  
-  // 3. TIÊM NGỮ NGHĨA VĂN HÓA VÀO PROMPT (Từ file Markdown RAG hoặc Knowledge Base)
-  const deepCulturalContext = await getRagContext(targetName);
-  const dynamicSystemPrompt = `${BASE_SYSTEM_PROMPT}\n\nComprehensive Cultural Knowledge & Deep Context:\n${deepCulturalContext}`;
+  const artworkInformation = await readArtworkInformation(targetName);
 
   const userPrompt = [
     `NPC name: ${npcName}`,
     `Current AR target image: ${targetName}`,
     context ? `Lesson context: ${context}` : "",
-    `Selected guide language: ${languageName}.`,
-    `STRICT REQUIREMENT: You MUST reply entirely in ${languageName}, even if the student speaks in another language or mixes languages.`,
+    `Selected guide language: ${language.script}.`,
+    `STRICT REQUIREMENT: Reply 100% ENTIRELY in ${language.script}. Use natural, culturally appropriate, and native phrasing. Do not reply in any other language.`,
+    "Artwork background knowledge:", artworkInformation,
     `Student question: ${transcript}`
   ].filter(Boolean).join("\n");
 
-  let userContent = userPrompt;
+  const userContent = [{ type: "text", text: userPrompt }];
+
   if (body.imageBase64) {
     const mime = body.imageMimeType || "image/jpeg";
-    userContent = [
-      { type: "text", text: userPrompt },
-      { type: "image_url", image_url: { url: `data:${mime};base64,${body.imageBase64}` } }
-    ];
+    userContent.push({
+      type: "image_url",
+      image_url: { url: `data:${mime};base64,${body.imageBase64}` }
+    });
   }
 
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
@@ -230,9 +174,9 @@ async function createNpcReply(transcript, body, language) {
     },
     body: JSON.stringify({
       model: CHAT_MODEL,
-      temperature: 0.2, // Giữ nguyên mức 0.2 để giảm hallucination
+      temperature: 0.2,
       messages: [
-        { role: "system", content: dynamicSystemPrompt },
+        { role: "system", content: systemPrompt },
         { role: "user", content: userContent }
       ]
     })
@@ -242,7 +186,7 @@ async function createNpcReply(transcript, body, language) {
   return extractResponseText(data).trim();
 }
 
-async function synthesizeSpeech(text) {
+async function synthesizeSpeech(text, languageName) {
   const response = await fetch("https://api.openai.com/v1/audio/speech", {
     method: "POST",
     headers: {
@@ -256,17 +200,10 @@ async function synthesizeSpeech(text) {
       format: "mp3"
     })
   });
+  if (!response.ok) throw new Error(`OpenAI TTS error ${response.status}: ${await response.text()}`);
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`OpenAI TTS error ${response.status}: ${errorText}`);
-  }
-
-  const id = crypto.randomUUID();
-  const fileName = `${id}.mp3`;
-  const filePath = path.join(AUDIO_DIR, fileName);
-  const audioBuffer = Buffer.from(await response.arrayBuffer());
-  await writeFile(filePath, audioBuffer);
+  const fileName = `${crypto.randomUUID()}.mp3`;
+  await writeFile(path.join(AUDIO_DIR, fileName), Buffer.from(await response.arrayBuffer()));
   return `/audio/${fileName}`;
 }
 
@@ -278,62 +215,34 @@ function extractResponseText(data) {
 }
 
 async function serveAudio(pathname, res) {
-  const fileName = path.basename(pathname);
-  const filePath = path.join(AUDIO_DIR, fileName);
-
-  if (!existsSync(filePath)) {
-    sendJson(res, 404, { error: "Audio file not found" });
-    return;
-  }
-
-  const fileStat = await stat(filePath);
-  const bytes = await readFile(filePath);
-  res.writeHead(200, {
-    "Content-Type": "audio/mpeg",
-    "Content-Length": fileStat.size,
-    "Cache-Control": "no-store"
-  });
+  const filePath = path.join(AUDIO_DIR, path.basename(pathname));
+  if (!existsSync(filePath)) return sendJson(res, 404, { error: "Audio file not found" });
+  const [fileStat, bytes] = await Promise.all([stat(filePath), readFile(filePath)]);
+  res.writeHead(200, { "Content-Type": "audio/mpeg", "Content-Length": fileStat.size, "Cache-Control": "no-store" });
   res.end(bytes);
 }
 
 async function readOpenAiResponse(response) {
   const text = await response.text();
   let data;
-
-  try {
-    data = JSON.parse(text);
-  } catch {
-    data = { raw: text };
-  }
-
-  if (!response.ok) {
-    throw new Error(`OpenAI API error ${response.status}: ${text}`);
-  }
-
+  try { data = JSON.parse(text); } catch { data = { raw: text }; }
+  if (!response.ok) throw new Error(`OpenAI API error ${response.status}: ${text}`);
   return data;
 }
 
 async function readJsonBody(req) {
   const chunks = [];
   let total = 0;
-
   for await (const chunk of req) {
     total += chunk.length;
-    if (total > MAX_BODY_BYTES) {
-      throw new Error("Request body is too large");
-    }
+    if (total > MAX_BODY_BYTES) throw new Error("Request body is too large");
     chunks.push(chunk);
   }
-
-  const rawBody = Buffer.concat(chunks).toString("utf8");
-  return JSON.parse(rawBody || "{}");
+  return JSON.parse(Buffer.concat(chunks).toString("utf8") || "{}");
 }
 
 function sendJson(res, status, data) {
-  res.writeHead(status, {
-    "Content-Type": "application/json; charset=utf-8",
-    "Cache-Control": "no-store"
-  });
+  res.writeHead(status, { "Content-Type": "application/json; charset=utf-8", "Cache-Control": "no-store" });
   res.end(JSON.stringify(data));
 }
 
@@ -344,7 +253,5 @@ function setCorsHeaders(res) {
 }
 
 function requireApiKey() {
-  if (!API_KEY) {
-    throw new Error("OPENAI_API_KEY is not set on the server.");
-  }
+  if (!API_KEY) throw new Error("OPENAI_API_KEY is not set on the server.");
 }
