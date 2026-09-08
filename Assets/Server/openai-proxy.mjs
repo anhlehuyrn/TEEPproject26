@@ -7,10 +7,10 @@ import { fileURLToPath } from "node:url";
 
 const PORT = Number(process.env.PORT || 8787);
 const API_KEY = process.env.OPENAI_API_KEY;
-const CHAT_MODEL = process.env.OPENAI_CHAT_MODEL || "gpt-4o-mini";
-const TRANSCRIBE_MODEL = process.env.OPENAI_TRANSCRIBE_MODEL || "whisper-1";
-const TTS_MODEL = process.env.OPENAI_TTS_MODEL || "tts-1";
-const TTS_VOICE = process.env.OPENAI_TTS_VOICE || "nova";
+const CHAT_MODEL = process.env.OPENAI_CHAT_MODEL || "gpt-4.1-mini";
+const TRANSCRIBE_MODEL = process.env.OPENAI_TRANSCRIBE_MODEL || "gpt-4o-mini-transcribe";
+const TTS_MODEL = process.env.OPENAI_TTS_MODEL || "gpt-4o-mini-tts";
+const TTS_VOICE = process.env.OPENAI_TTS_VOICE || "alloy";
 const SERVER_DIR = path.dirname(fileURLToPath(import.meta.url));
 const AUDIO_DIR = path.join(SERVER_DIR, ".audio");
 const RAG_DOCS_DIR = path.join(SERVER_DIR, "rag-docs");
@@ -166,33 +166,16 @@ async function createNpcReply(transcript, body) {
   return extractResponseText(data).trim();
 }
 
-function isMalayalamText(text, preferredLang) {
-  if (preferredLang === "ml" || preferredLang === "Malayalam") return true;
-  return /[\u0D00-\u0D7F]/.test(text || "");
-}
-
 async function synthesizeSpeech(text, preferredLang) {
-  const isMl = isMalayalamText(text, preferredLang);
-
-  // 1. Dành riêng cho tiếng Malayalam: Dùng Google TTS Malayalam giọng bản địa chuẩn 100%
-  if (isMl) {
-    try {
-      const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=ml&client=tw-ob`;
-      const response = await fetch(url, {
-        headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" }
-      });
-
-      if (response.ok) {
-        const fileName = `${crypto.randomUUID()}.mp3`;
-        await writeFile(path.join(AUDIO_DIR, fileName), Buffer.from(await response.arrayBuffer()));
-        return `/audio/${fileName}`;
-      }
-    } catch (err) {
-      console.warn("Google TTS fallback error, switching to OpenAI TTS:", err.message);
-    }
+  let language = "English";
+  if (preferredLang === "ml" || preferredLang === "Malayalam" || /[\u0D00-\u0D7F]/.test(text || "")) {
+    language = "Malayalam";
+  } else if (preferredLang === "vi" || preferredLang === "Vietnamese" || /[àáạảãâầấậẩẫăằắặẳẵèéẹẻẽêềếệểễìíịỉĩòóọỏõôồốộổỗơờớợởỡùúụủũưừứựửữỳýỵỷỹđ]/i.test(text || "")) {
+    language = "Vietnamese";
+  } else if (preferredLang === "zh" || preferredLang === "zh-TW" || preferredLang === "Traditional Chinese" || /[\u4e00-\u9fa5]/.test(text || "")) {
+    language = "Traditional Chinese";
   }
 
-  // 2. Dành cho Tiếng Việt, Tiếng Trung, Tiếng Anh: Dùng OpenAI TTS
   const response = await fetch("https://api.openai.com/v1/audio/speech", {
     method: "POST",
     headers: {
@@ -203,7 +186,8 @@ async function synthesizeSpeech(text, preferredLang) {
       model: TTS_MODEL,
       voice: TTS_VOICE,
       input: text,
-      format: "mp3"
+      instructions: `Speak clearly and naturally in ${language}.`,
+      response_format: "mp3"
     })
   });
   if (!response.ok) throw new Error(`OpenAI TTS error ${response.status}: ${await response.text()}`);
