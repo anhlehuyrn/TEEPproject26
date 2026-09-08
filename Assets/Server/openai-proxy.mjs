@@ -82,7 +82,7 @@ async function handleAsk(req, res) {
     : "I could not hear the question clearly. Please tap Ask AI again and speak closer to the tablet / Mình chưa nghe rõ, bạn bấm nói lại nhé / എനിക്ക് കേൾക്കാനായില്ല.";
 
   console.log(`NPC reply:`, reply);
-  const audioUrl = await synthesizeSpeech(reply);
+  const audioUrl = await synthesizeSpeech(reply, body.language);
   sendJson(res, 200, { transcript, reply, audioUrl });
 }
 
@@ -166,7 +166,33 @@ async function createNpcReply(transcript, body) {
   return extractResponseText(data).trim();
 }
 
-async function synthesizeSpeech(text) {
+function isMalayalamText(text, preferredLang) {
+  if (preferredLang === "ml" || preferredLang === "Malayalam") return true;
+  return /[\u0D00-\u0D7F]/.test(text || "");
+}
+
+async function synthesizeSpeech(text, preferredLang) {
+  const isMl = isMalayalamText(text, preferredLang);
+
+  // 1. Dành riêng cho tiếng Malayalam: Dùng Google TTS Malayalam giọng bản địa chuẩn 100%
+  if (isMl) {
+    try {
+      const url = `https://translate.google.com/translate_tts?ie=UTF-8&q=${encodeURIComponent(text)}&tl=ml&client=tw-ob`;
+      const response = await fetch(url, {
+        headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" }
+      });
+
+      if (response.ok) {
+        const fileName = `${crypto.randomUUID()}.mp3`;
+        await writeFile(path.join(AUDIO_DIR, fileName), Buffer.from(await response.arrayBuffer()));
+        return `/audio/${fileName}`;
+      }
+    } catch (err) {
+      console.warn("Google TTS fallback error, switching to OpenAI TTS:", err.message);
+    }
+  }
+
+  // 2. Dành cho Tiếng Việt, Tiếng Trung, Tiếng Anh: Dùng OpenAI TTS
   const response = await fetch("https://api.openai.com/v1/audio/speech", {
     method: "POST",
     headers: {
