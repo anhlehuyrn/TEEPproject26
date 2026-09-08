@@ -45,7 +45,8 @@ const BASE_SYSTEM_PROMPT = [
   "Your persona is an energetic, enthusiastic, and friendly young female guide who loves sharing culture.",
   "Your role is cultural mediation. Always focus on explaining the metaphorical and satirical meanings.",
   "Use a cheerful, lively, expressive, and culturally engaging tone with enthusiasm.",
-  "Auto-detect the user's language and strictly reply in that exact same language. You must fully support and respond fluently in English, Vietnamese (Tiếng Việt), Traditional Chinese (繁體中文), and Malayalam (മലയാളം).",
+  "You are fully multilingual and fluent in English, Vietnamese (Tiếng Việt), Traditional Chinese (繁體中文), and Malayalam (മലയാളം).",
+  "Always reply strictly in the requested target language with native phrasing and cultural accuracy.",
   "Keep your answers concise and strictly under 80 words to suit an AR environment.",
   "If the user asks off-topic questions (e.g., math, coding, politics), gently guide them back to exploring the cultural secrets of the painting."
 ].join(" ");
@@ -93,6 +94,20 @@ server.listen(PORT, "0.0.0.0", () => {
   }
 });
 
+function normalizeLanguage(value) {
+  const lang = (value || "").toLowerCase();
+  if (lang.includes("ml") || lang.includes("malayalam")) {
+    return { name: "Malayalam (മലയാളം)", code: "ml" };
+  }
+  if (lang.includes("vi") || lang.includes("vietnam")) {
+    return { name: "Vietnamese (Tiếng Việt)", code: "vi" };
+  }
+  if (lang.includes("zh") || lang.includes("chinese") || lang.includes("taiwan") || lang.includes("tw")) {
+    return { name: "Traditional Chinese (繁體中文)", code: "zh" };
+  }
+  return { name: "English", code: "en" };
+}
+
 async function handleAsk(req, res) {
   requireApiKey();
 
@@ -104,16 +119,24 @@ async function handleAsk(req, res) {
     return;
   }
 
+  const language = normalizeLanguage(body.language);
   const mimeType = body.mimeType || "audio/wav";
   const audioBuffer = Buffer.from(audioBase64, "base64");
-  const transcript = await transcribeAudio(audioBuffer, mimeType);
-  console.log("Student transcript:", transcript || "(empty)");
+  const transcript = await transcribeAudio(audioBuffer, mimeType, language.code);
+  console.log(`[${language.name}] Student transcript:`, transcript || "(empty)");
+
+  const fallbackMessages = {
+    "ml": "എനിക്ക് ചോദ്യം വ്യക്തമായി കേൾക്കാനായില്ല. ദയവായി Ask AI വീண்டும் അമർത്തി സംസാരിക്കുക.",
+    "vi": "Mình chưa nghe rõ câu hỏi của bạn. Bạn vui lòng ấn nút Ask AI một lần nữa và nói gần hơn nhé.",
+    "zh": "我沒有清楚聽到問題。請再次點選 Ask AI，並靠近設備說話。",
+    "en": "I could not hear the question clearly. Please tap Ask AI again and speak closer to the device."
+  };
 
   const reply = transcript.trim()
-    ? await createNpcReply(transcript, body)
-    : "I could not hear the question clearly. Please tap Ask AI again and speak closer to the tablet.";
+    ? await createNpcReply(transcript, body, language)
+    : (fallbackMessages[language.code] || fallbackMessages["en"]);
 
-  console.log("NPC reply:", reply);
+  console.log(`[${language.name}] NPC reply:`, reply);
   const audioUrl = await synthesizeSpeech(reply);
 
   sendJson(res, 200, {
@@ -123,10 +146,13 @@ async function handleAsk(req, res) {
   });
 }
 
-async function transcribeAudio(audioBuffer, mimeType) {
+async function transcribeAudio(audioBuffer, mimeType, languageCode) {
   const form = new FormData();
   form.append("model", TRANSCRIBE_MODEL);
   form.append("file", new Blob([audioBuffer], { type: mimeType }), "student-question.wav");
+  if (languageCode) {
+    form.append("language", languageCode);
+  }
 
   const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
     method: "POST",
@@ -168,10 +194,11 @@ async function getRagContext(targetName) {
   return culturalKnowledgeBase[targetName] || "Focus on traditional cultural values.";
 }
 
-async function createNpcReply(transcript, body) {
+async function createNpcReply(transcript, body, language) {
   const npcName = body.npcName || "NPC Avatar";
   const targetName = body.targetName || "the scanned image";
   const context = body.context || "";
+  const languageName = language?.name || "English";
   
   // 3. TIÊM NGỮ NGHĨA VĂN HÓA VÀO PROMPT (Từ file Markdown RAG hoặc Knowledge Base)
   const deepCulturalContext = await getRagContext(targetName);
@@ -181,8 +208,19 @@ async function createNpcReply(transcript, body) {
     `NPC name: ${npcName}`,
     `Current AR target image: ${targetName}`,
     context ? `Lesson context: ${context}` : "",
+    `Selected guide language: ${languageName}.`,
+    `STRICT REQUIREMENT: You MUST reply entirely in ${languageName}, even if the student speaks in another language or mixes languages.`,
     `Student question: ${transcript}`
   ].filter(Boolean).join("\n");
+
+  let userContent = userPrompt;
+  if (body.imageBase64) {
+    const mime = body.imageMimeType || "image/jpeg";
+    userContent = [
+      { type: "text", text: userPrompt },
+      { type: "image_url", image_url: { url: `data:${mime};base64,${body.imageBase64}` } }
+    ];
+  }
 
   const response = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
@@ -195,7 +233,7 @@ async function createNpcReply(transcript, body) {
       temperature: 0.2, // Giữ nguyên mức 0.2 để giảm hallucination
       messages: [
         { role: "system", content: dynamicSystemPrompt },
-        { role: "user", content: userPrompt }
+        { role: "user", content: userContent }
       ]
     })
   });

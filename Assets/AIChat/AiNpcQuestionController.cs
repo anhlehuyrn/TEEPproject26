@@ -426,13 +426,18 @@ public class AiNpcQuestionController : MonoBehaviour
         HideAnswerPanels();
         SetStatus("Sending question...");
 
+        int langIndex = PlayerPrefs.GetInt("AppLanguage", 0);
+        string[] langCodes = { "en", "zh-TW", "ml", "vi" };
+        string currentLang = (langIndex >= 0 && langIndex < langCodes.Length) ? langCodes[langIndex] : "en";
+
         AskRequest request = new AskRequest
         {
             audioBase64 = Convert.ToBase64String(wavBytes),
             mimeType = "audio/wav",
             npcName = npcName,
             targetName = GetActiveTargetName(),
-            context = lessonContext
+            context = lessonContext,
+            language = currentLang
         };
 
         AddVisionImageToRequest(request);
@@ -867,7 +872,7 @@ public class AiNpcQuestionController : MonoBehaviour
         SetAllAvatarAnimatorsTalk(false);
     }
 
-    [Serializable] private class AskRequest { public string audioBase64; public string mimeType; public string npcName; public string targetName; public string context; public string imageBase64; public string imageMimeType; }
+    [Serializable] private class AskRequest { public string audioBase64; public string mimeType; public string npcName; public string targetName; public string context; public string language; public string imageBase64; public string imageMimeType; }
     [Serializable] private class AskResponse { public string transcript; public string reply; public string audioUrl; public string error; }
 }
 
